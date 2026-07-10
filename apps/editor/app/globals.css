@@ -6,9 +6,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  /* Plixa: UI durchgängig Inter; Barlow/Geist als Fallback. */
   --font-sans:
-    var(--font-barlow), var(--font-geist-sans), ui-sans-serif, system-ui,
-    sans-serif;
+    var(--font-inter), var(--font-barlow), var(--font-geist-sans),
+    ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, monospace;
@@ -18,12 +19,15 @@
   --font-barlow:
     var(--font-barlow), var(--font-geist-sans), ui-sans-serif, system-ui,
     sans-serif;
+  /* Nur die Wortmarke „Plixa": Fraunces (Serifen). */
+  --font-logo: var(--font-fraunces), Georgia, "Times New Roman", serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-barlow), sans-serif;
+  --font-sans:
+    var(--font-inter), var(--font-barlow), sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
   --font-pixel:
     var(--font-geist-pixel-square), var(--font-geist-mono), monospace;
@@ -63,6 +67,21 @@
 }
 
 :root {
+  /* ── Plixa-Markenpalette (Quelle: plixa/src/app/globals.css) ─────────── */
+  --plixa-amber: #d39440; /* Leitfarbe Amber (Holz) */
+  --plixa-amber-d: #b3792d; /* Amber dunkel */
+  --plixa-gold: #e3b14e; /* Gold (Highlight) */
+  --plixa-night: #11181f; /* Nachtblau (dunkler Grund) */
+  --plixa-night-2: #0d1318;
+  --plixa-paper: #f7f4ee; /* Papier (heller Grund) */
+  --plixa-ink: #1a242e; /* Tinte (Text) */
+  --plixa-sky: #5b8fb8;
+  --plixa-grow: #4e9e78;
+  --plixa-muted: #7c8b9d;
+  /* Aktiv-Verlauf (Buttons/Tabs) + aktive Textfarbe. */
+  --plixa-active-gradient: linear-gradient(180deg, #e3b14e, #d39440);
+  --plixa-active-fg: #18120a;
+
   --radius: 0.625rem;
   --background: oklch(0.998 0 0);
   --foreground: oklch(0.145 0 0);
@@ -70,31 +89,32 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(0.998 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Akzent-/Primärfarbe des Editors → Amber. */
+  --primary: #d39440;
+  --primary-foreground: #18120a;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: #f4ead9; /* warmer Amber-Ton für Hover-/Aktiv-Flächen */
+  --accent-foreground: #18120a;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
+  --ring: #d39440;
+  --chart-1: #d39440;
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-primary: #d39440;
+  --sidebar-primary-foreground: #18120a;
+  --sidebar-accent: #f4ead9;
+  --sidebar-accent-foreground: #18120a;
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: #d39440;
 }
 
 .dark {
@@ -104,8 +124,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #e3b14e; /* Gold — auf dunklem Grund heller als Amber */
+  --primary-foreground: #18120a;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -117,20 +137,32 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
+  --ring: #d39440;
+  --chart-1: #e3b14e;
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #e3b14e;
+  --sidebar-primary-foreground: #18120a;
   --sidebar-accent: oklch(0.235 0 0); /* matching accent */
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: #d39440;
+}
+
+/* Marken-Wortmarke „Plixa" — immer Serifen-Schrift (Fraunces). */
+.plixa-logo {
+  font-family: var(--font-logo);
+}
+
+/* Aktiv-Zustand im Plixa-Stil (Buttons/Tabs): Amber-Verlauf + dunkle Schrift. */
+.plixa-active {
+  background: var(--plixa-active-gradient);
+  color: var(--plixa-active-fg);
+  border-color: var(--plixa-amber);
 }
 
 @layer base {

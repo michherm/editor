@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
     '@pascal-app/editor',
     '@pascal-app/mcp',
     '@pascal-app/plugin-trees',
+    '@plixa/stairs',
     '@dgreenheck/ez-tree',
   ],
   turbopack: {

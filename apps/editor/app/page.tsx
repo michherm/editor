@@ -4,6 +4,8 @@ import { Editor, ItemsPanel } from '@pascal-app/editor'
 import { Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
+import { PlixaHeader } from '@/components/plixa-header'
 import { BuildTab } from '@/components/build-tab'
 import {
   CommunityViewerToolbarLeft,
@@ -17,10 +19,12 @@ function EditorItemsPanel() {
   return <ItemsPanel showSourceFilter={false} showTagFilters={false} />
 }
 
-const SIDEBAR_TABS = [
+// Static per-tab config; the visible label is translated at render time via the
+// `labelKey`, so the sidebar follows the active Plixa language.
+const SIDEBAR_TAB_CONFIG = [
   {
     id: 'site',
-    label: 'Scene',
+    labelKey: 'tab.scene',
     component: () => null,
     mobileDefaultSnap: 0.5,
     mobileIcon: <Layers className="h-5 w-5" />,
@@ -36,7 +40,7 @@ const SIDEBAR_TABS = [
   },
   {
     id: 'build',
-    label: 'Build',
+    labelKey: 'tab.build',
     component: BuildTab,
     mobileDefaultSnap: 0.5,
     mobileIcon: <Hammer className="h-5 w-5" />,
@@ -52,7 +56,7 @@ const SIDEBAR_TABS = [
   },
   {
     id: 'items',
-    label: 'Items',
+    labelKey: 'tab.items',
     component: EditorItemsPanel,
     mobileDefaultSnap: 0.5,
     mobileIcon: <Package className="h-5 w-5" />,
@@ -68,7 +72,7 @@ const SIDEBAR_TABS = [
   },
   {
     id: 'settings',
-    label: 'Settings',
+    labelKey: 'tab.settings',
     component: () => null,
     mobileDefaultSnap: 0.5,
     mobileIcon: <Settings className="h-5 w-5" />,
@@ -82,25 +86,28 @@ const SIDEBAR_TABS = [
       />
     ),
   },
-]
+] as const
 
 const PROJECT_ID = 'local-editor'
 
 export default function Home() {
+  const { t } = useTranslation()
+  const sidebarTabs = SIDEBAR_TAB_CONFIG.map((tab) => ({ ...tab, label: t(tab.labelKey) }))
+
   return (
     <div className="relative h-screen w-screen">
       {PROJECT_ID === 'local-editor' && (
         <div className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2">
           <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-border/60 bg-background/90 px-4 py-1.5 text-xs shadow-sm backdrop-blur">
-            <span className="text-muted-foreground">Local editor — scenes are not saved.</span>
+            <span className="text-muted-foreground">{t('app.localScenes')}</span>
             <Link className="font-medium text-foreground hover:underline" href="/scenes">
-              Open recent scenes
+              {t('app.openRecent')}
             </Link>
             <span aria-hidden className="text-muted-foreground">
               ·
             </span>
             <Link className="font-medium text-foreground hover:underline" href="/scenes">
-              Create new
+              {t('app.createNew')}
             </Link>
           </div>
         </div>
@@ -108,7 +115,8 @@ export default function Home() {
       <Editor
         layoutVersion="v2"
         projectId={PROJECT_ID}
-        sidebarTabs={SIDEBAR_TABS}
+        sidebarTabs={sidebarTabs}
+        sidebarTop={<PlixaHeader />}
         viewerToolbarLeft={<CommunityViewerToolbarLeft />}
         viewerToolbarRight={<CommunityViewerToolbarRight />}
       />

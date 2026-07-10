@@ -1,0 +1,23 @@
+{
+  "name": "@plixa/stairs",
+  "version": "0.1.0",
+  "description": "Plixa WikiHouse/CNC plywood stair as a Pascal editor plugin (parametric, DIN 18065, DXF/3dm via the Plixa engine).",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" }
+  },
+  "peerDependencies": {
+    "@pascal-app/core": "*",
+    "@pascal-app/editor": "*",
+    "react": "^18 || ^19",
+    "react-i18next": "^15",
+    "three": "^0.184",
+    "zod": "^4"
+  },
+  "devDependencies": {
+    "@pascal/typescript-config": "*"
+  },
+  "license": "MIT"
+}
