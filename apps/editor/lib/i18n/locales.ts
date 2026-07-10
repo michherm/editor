@@ -33,6 +33,17 @@ export type Translation = {
     material: string
     nextStep: string
   }
+  ai: {
+    heading: string
+    intro: string
+    example: string
+    placeholder: string
+    send: string
+    thinking: string
+    usingTool: string
+    notConfigured: string
+    failed: string
+  }
 }
 
 const de: Translation = {
@@ -65,6 +76,17 @@ const de: Translation = {
     material: 'Material',
     nextStep:
       'Nächster Ausbau: DXF/3dm-Export der Teile + EC5-Statik-Bericht über die Plixa-Engine.',
+  },
+  ai: {
+    heading: 'Plixa KI',
+    intro: 'Beschreibe, was gebaut werden soll — Plixa ändert die Szene live.',
+    example: 'z. B. „großes Wohnzimmer mit offener Küche und Treppe nach oben"',
+    placeholder: 'Raum, Möbel, Treppe … beschreiben',
+    send: 'Senden',
+    thinking: 'Denkt nach…',
+    usingTool: 'Werkzeug: {{tool}}',
+    notConfigured: 'Die KI ist noch nicht konfiguriert (kein API-Schlüssel auf dem Server).',
+    failed: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
   },
 }
 
@@ -99,6 +121,17 @@ const en: Translation = {
     nextStep:
       'Next step: DXF/3dm export of the parts + EC5 structural report via the Plixa engine.',
   },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Describe what to build — Plixa changes the scene live.',
+    example: 'e.g. "a large living room with an open kitchen and stairs going up"',
+    placeholder: 'Describe a room, furniture, stairs…',
+    send: 'Send',
+    thinking: 'Thinking…',
+    usingTool: 'Tool: {{tool}}',
+    notConfigured: 'AI is not configured yet (no API key on the server).',
+    failed: 'Something went wrong. Please try again.',
+  },
 }
 
 const fr: Translation = {
@@ -131,6 +164,17 @@ const fr: Translation = {
     material: 'Matériau',
     nextStep:
       'Prochaine étape : export DXF/3dm des pièces + rapport structurel EC5 via le moteur Plixa.',
+  },
+  ai: {
+    heading: 'Plixa IA',
+    intro: 'Décris ce qu\'il faut construire — Plixa modifie la scène en direct.',
+    example: 'p. ex. « grand salon avec cuisine ouverte et escalier vers le haut »',
+    placeholder: 'Décris une pièce, des meubles, un escalier…',
+    send: 'Envoyer',
+    thinking: 'Réflexion…',
+    usingTool: 'Outil : {{tool}}',
+    notConfigured: 'L\'IA n\'est pas encore configurée (pas de clé API sur le serveur).',
+    failed: 'Une erreur s\'est produite. Réessaie.',
   },
 }
 
@@ -165,6 +209,17 @@ const pl: Translation = {
     nextStep:
       'Następny krok: eksport DXF/3dm elementów + raport konstrukcyjny EC5 przez silnik Plixa.',
   },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Opisz, co zbudować — Plixa zmienia scenę na żywo.',
+    example: 'np. „duży salon z otwartą kuchnią i schodami w górę"',
+    placeholder: 'Opisz pokój, meble, schody…',
+    send: 'Wyślij',
+    thinking: 'Myślę…',
+    usingTool: 'Narzędzie: {{tool}}',
+    notConfigured: 'AI nie jest jeszcze skonfigurowane (brak klucza API na serwerze).',
+    failed: 'Coś poszło nie tak. Spróbuj ponownie.',
+  },
 }
 
 const it: Translation = {
@@ -197,6 +252,17 @@ const it: Translation = {
     material: 'Materiale',
     nextStep:
       'Prossimo passo: esportazione DXF/3dm dei pezzi + relazione strutturale EC5 tramite il motore Plixa.',
+  },
+  ai: {
+    heading: 'Plixa IA',
+    intro: 'Descrivi cosa costruire — Plixa modifica la scena in tempo reale.',
+    example: 'es. «grande soggiorno con cucina a vista e scala verso l\'alto»',
+    placeholder: 'Descrivi una stanza, mobili, una scala…',
+    send: 'Invia',
+    thinking: 'Sto pensando…',
+    usingTool: 'Strumento: {{tool}}',
+    notConfigured: 'L\'IA non è ancora configurata (nessuna chiave API sul server).',
+    failed: 'Qualcosa è andato storto. Riprova.',
   },
 }
 
@@ -231,6 +297,17 @@ const es: Translation = {
     nextStep:
       'Siguiente paso: exportación DXF/3dm de las piezas + informe estructural EC5 mediante el motor Plixa.',
   },
+  ai: {
+    heading: 'Plixa IA',
+    intro: 'Describe qué construir — Plixa cambia la escena en vivo.',
+    example: 'p. ej. «salón grande con cocina abierta y escalera hacia arriba»',
+    placeholder: 'Describe una habitación, muebles, una escalera…',
+    send: 'Enviar',
+    thinking: 'Pensando…',
+    usingTool: 'Herramienta: {{tool}}',
+    notConfigured: 'La IA aún no está configurada (sin clave API en el servidor).',
+    failed: 'Algo salió mal. Inténtalo de nuevo.',
+  },
 }
 
 const nl: Translation = {
@@ -263,6 +340,17 @@ const nl: Translation = {
     material: 'Materiaal',
     nextStep:
       'Volgende stap: DXF/3dm-export van de delen + EC5-constructierapport via de Plixa-engine.',
+  },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Beschrijf wat er gebouwd moet worden — Plixa past de scène live aan.',
+    example: 'bijv. "grote woonkamer met open keuken en trap naar boven"',
+    placeholder: 'Beschrijf een kamer, meubels, een trap…',
+    send: 'Verstuur',
+    thinking: 'Denkt na…',
+    usingTool: 'Tool: {{tool}}',
+    notConfigured: 'De AI is nog niet geconfigureerd (geen API-sleutel op de server).',
+    failed: 'Er ging iets mis. Probeer het opnieuw.',
   },
 }
 
@@ -297,6 +385,17 @@ const pt: Translation = {
     nextStep:
       'Próximo passo: exportação DXF/3dm das peças + relatório estrutural EC5 através do motor Plixa.',
   },
+  ai: {
+    heading: 'Plixa IA',
+    intro: 'Descreve o que construir — o Plixa altera a cena em direto.',
+    example: 'p. ex. «sala grande com cozinha aberta e escada para cima»',
+    placeholder: 'Descreve uma divisão, móveis, uma escada…',
+    send: 'Enviar',
+    thinking: 'A pensar…',
+    usingTool: 'Ferramenta: {{tool}}',
+    notConfigured: 'A IA ainda não está configurada (sem chave API no servidor).',
+    failed: 'Algo correu mal. Tenta novamente.',
+  },
 }
 
 const cs: Translation = {
@@ -329,6 +428,17 @@ const cs: Translation = {
     material: 'Materiál',
     nextStep:
       'Další krok: export DXF/3dm dílů + statická zpráva EC5 přes engine Plixa.',
+  },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Popiš, co postavit — Plixa mění scénu živě.',
+    example: 'např. „velký obývací pokoj s otevřenou kuchyní a schody nahoru"',
+    placeholder: 'Popiš místnost, nábytek, schodiště…',
+    send: 'Odeslat',
+    thinking: 'Přemýšlím…',
+    usingTool: 'Nástroj: {{tool}}',
+    notConfigured: 'AI zatím není nakonfigurováno (na serveru chybí API klíč).',
+    failed: 'Něco se pokazilo. Zkus to znovu.',
   },
 }
 
@@ -363,6 +473,17 @@ const sv: Translation = {
     nextStep:
       'Nästa steg: DXF/3dm-export av delarna + EC5-konstruktionsrapport via Plixa-motorn.',
   },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Beskriv vad som ska byggas — Plixa ändrar scenen live.',
+    example: 't.ex. "stort vardagsrum med öppet kök och trappa upp"',
+    placeholder: 'Beskriv ett rum, möbler, en trappa…',
+    send: 'Skicka',
+    thinking: 'Tänker…',
+    usingTool: 'Verktyg: {{tool}}',
+    notConfigured: 'AI:n är inte konfigurerad än (ingen API-nyckel på servern).',
+    failed: 'Något gick fel. Försök igen.',
+  },
 }
 
 const da: Translation = {
@@ -396,6 +517,17 @@ const da: Translation = {
     nextStep:
       'Næste skridt: DXF/3dm-eksport af delene + EC5-konstruktionsrapport via Plixa-motoren.',
   },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Beskriv hvad der skal bygges — Plixa ændrer scenen live.',
+    example: 'f.eks. "stor stue med åbent køkken og trappe opad"',
+    placeholder: 'Beskriv et rum, møbler, en trappe…',
+    send: 'Send',
+    thinking: 'Tænker…',
+    usingTool: 'Værktøj: {{tool}}',
+    notConfigured: 'AI\'en er ikke konfigureret endnu (ingen API-nøgle på serveren).',
+    failed: 'Noget gik galt. Prøv igen.',
+  },
 }
 
 const ro: Translation = {
@@ -428,6 +560,17 @@ const ro: Translation = {
     material: 'Material',
     nextStep:
       'Pasul următor: export DXF/3dm al pieselor + raport structural EC5 prin motorul Plixa.',
+  },
+  ai: {
+    heading: 'Plixa AI',
+    intro: 'Descrie ce să construiască — Plixa schimbă scena în timp real.',
+    example: 'de ex. „living mare cu bucătărie deschisă și scară în sus"',
+    placeholder: 'Descrie o cameră, mobilier, o scară…',
+    send: 'Trimite',
+    thinking: 'Se gândește…',
+    usingTool: 'Instrument: {{tool}}',
+    notConfigured: 'IA nu este încă configurată (nicio cheie API pe server).',
+    failed: 'Ceva n-a mers. Încearcă din nou.',
   },
 }
 

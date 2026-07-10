@@ -8,6 +8,7 @@ import {
 } from '@pascal-app/core'
 import { builtinPlugin } from '@pascal-app/nodes'
 import { treesPlugin } from '@pascal-app/plugin-trees'
+import { plixaAiPlugin } from '@plixa/ai'
 import { plixaCncPlugin } from '@plixa/stairs'
 
 // Idempotency guards: HMR can reload this module, but `registerNode`
@@ -85,7 +86,7 @@ export async function loadExternalPlugins(): Promise<void> {
 // would use. Pascal's built-in stair stays for planning; the Plixa CNC panel
 // (`plixa:cnc`) turns the selected stair into WikiHouse milled parts + a
 // DIN 18065 pre-check. Must be set before `loadExternalPlugins()` reads it.
-setPluginDiscovery(async () => [treesPlugin, plixaCncPlugin])
+setPluginDiscovery(async () => [treesPlugin, plixaCncPlugin, plixaAiPlugin])
 
 loadBuiltinsSync()
 void loadExternalPlugins()
