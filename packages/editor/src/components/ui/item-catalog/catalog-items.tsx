@@ -1,5 +1,11 @@
 import type { AssetInput } from '@pascal-app/core'
 
+
+// Möbel-Katalog-Assets: Basis über NEXT_PUBLIC_ASSETS_CDN_URL (Standard: Plixa R2).
+// Ersetzt Pascals Supabase-Host — im Live-Betrieb lädt der Katalog von R2, nicht von Supabase.
+const ASSET_BASE =
+  process.env.NEXT_PUBLIC_ASSETS_CDN_URL || 'https://pub-4572f09e779c444fa5bd77e378de46df.r2.dev'
+
 export const CATALOG_ITEMS: AssetInput[] = [
   {
     id: 'cactus',
@@ -21,10 +27,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'sculptural',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/cactus/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/cactus/model.glb',
+      `${ASSET_BASE}/items/system/cactus/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/cactus/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/cactus/floor-plan.png',
+      `${ASSET_BASE}/items/system/cactus/floor-plan.png`,
     dimensions: [0.34, 0.39, 0.27],
     offset: [-0.0039, 0, 0],
     rotation: [0, 0, 0],
@@ -36,10 +42,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'TV Stand',
     tags: ['floor', 'storage'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tv-stand/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tv-stand/model.glb',
+      `${ASSET_BASE}/items/system/tv-stand/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/tv-stand/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tv-stand/floor-plan.png',
+      `${ASSET_BASE}/items/system/tv-stand/floor-plan.png`,
     dimensions: [1.86, 0.35, 0.32],
     offset: [0, 0.2066, 0],
     rotation: [0, 0, 0],
@@ -65,10 +71,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'entertaining',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-table-mo9ms5yh/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-table-mo9ms5yh/models/item_model_Sffq4hIGw8R3keLh.glb',
+      `${ASSET_BASE}/items/system/dining-table-mo9ms5yh/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/dining-table-mo9ms5yh/models/item_model_Sffq4hIGw8R3keLh.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-table-mo9ms5yh/floor-plan.png',
+      `${ASSET_BASE}/items/system/dining-table-mo9ms5yh/floor-plan.png`,
     dimensions: [2, 0.77, 0.91],
     offset: [0.0002, 0.3793, -0.0026],
     rotation: [0, 0, 0],
@@ -81,10 +87,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Single Bed',
     tags: ['floor', 'bedroom'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/single-bed/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/single-bed/model.glb',
+      `${ASSET_BASE}/items/system/single-bed/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/single-bed/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/single-bed/floor-plan.png',
+      `${ASSET_BASE}/items/system/single-bed/floor-plan.png`,
     dimensions: [1.08, 0.6, 2.14],
     offset: [-0.0024, 0, -0.013],
     rotation: [0, 0, 0],
@@ -109,10 +115,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'lounger',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/livingroom-chair/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/livingroom-chair/model.glb',
+      `${ASSET_BASE}/items/system/livingroom-chair/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/livingroom-chair/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/livingroom-chair/floor-plan.png',
+      `${ASSET_BASE}/items/system/livingroom-chair/floor-plan.png`,
     dimensions: [1.1, 0.75, 1.07],
     offset: [0, 0.0001, 0.0053],
     rotation: [0, 0, 0],
@@ -124,10 +130,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Small Plant',
     tags: ['countertop', 'decor', 'vegetation'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/small-indoor-plant/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/small-indoor-plant/model.glb',
+      `${ASSET_BASE}/items/system/small-indoor-plant/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/small-indoor-plant/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/small-indoor-plant/floor-plan.png',
+      `${ASSET_BASE}/items/system/small-indoor-plant/floor-plan.png`,
     dimensions: [0.4, 0.67, 0.38],
     offset: [-0.0106, 0, 0.0067],
     rotation: [0, 0, 0],
@@ -155,10 +161,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'base',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/column/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/column/model.glb',
+      `${ASSET_BASE}/items/system/column/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/column/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/column/floor-plan.png',
+      `${ASSET_BASE}/items/system/column/floor-plan.png`,
     dimensions: [0.5, 2.5, 0.5],
     offset: [0, 1.25, 0],
     rotation: [0, 0, 0],
@@ -185,10 +191,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'exercise',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/barbell/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/barbell/model.glb',
+      `${ASSET_BASE}/items/system/barbell/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/barbell/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/barbell/floor-plan.png',
+      `${ASSET_BASE}/items/system/barbell/floor-plan.png`,
     dimensions: [0.38, 0.38, 1.72],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -200,10 +206,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Toy',
     tags: ['floor', 'kids', 'decor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toy/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toy/model.glb',
+      `${ASSET_BASE}/items/system/toy/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/toy/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toy/floor-plan.png',
+      `${ASSET_BASE}/items/system/toy/floor-plan.png`,
     dimensions: [0.29, 0.49, 0.34],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -230,10 +236,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'organizer',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/barbell-stand/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/barbell-stand/model.glb',
+      `${ASSET_BASE}/items/system/barbell-stand/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/barbell-stand/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/barbell-stand/floor-plan.png',
+      `${ASSET_BASE}/items/system/barbell-stand/floor-plan.png`,
     dimensions: [1.34, 1.22, 1.72],
     offset: [-0.0173, 0, 0],
     rotation: [0, 0, 0],
@@ -261,10 +267,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'antique',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/books/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/books/model.glb',
+      `${ASSET_BASE}/items/system/books/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/books/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/books/floor-plan.png',
+      `${ASSET_BASE}/items/system/books/floor-plan.png`,
     dimensions: [0.22, 0.22, 0.18],
     offset: [-0.0851, 0.003, 0.0209],
     rotation: [0, 0, 0],
@@ -276,10 +282,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Stool',
     tags: ['floor', 'seating'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stool/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stool/model.glb',
+      `${ASSET_BASE}/items/system/stool/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/stool/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stool/floor-plan.png',
+      `${ASSET_BASE}/items/system/stool/floor-plan.png`,
     dimensions: [0.52, 1.16, 0.55],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -307,10 +313,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'furniture',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/pool-table/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/pool-table/model.glb',
+      `${ASSET_BASE}/items/system/pool-table/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/pool-table/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/pool-table/floor-plan.png',
+      `${ASSET_BASE}/items/system/pool-table/floor-plan.png`,
     dimensions: [2.11, 0.98, 3.5],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -338,10 +344,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'timber',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bookshelf/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bookshelf/model.glb',
+      `${ASSET_BASE}/items/system/bookshelf/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/bookshelf/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bookshelf/floor-plan.png',
+      `${ASSET_BASE}/items/system/bookshelf/floor-plan.png`,
     dimensions: [0.93, 1.99, 0.33],
     offset: [0, 0, 0.0032],
     rotation: [0, 0, 0],
@@ -368,10 +374,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'clothes',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coat-rack/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coat-rack/model.glb',
+      `${ASSET_BASE}/items/system/coat-rack/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/coat-rack/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coat-rack/floor-plan.png',
+      `${ASSET_BASE}/items/system/coat-rack/floor-plan.png`,
     dimensions: [0.33, 1.76, 0.33],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -399,10 +405,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'hobby',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/car-toy/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/car-toy/model.glb',
+      `${ASSET_BASE}/items/system/car-toy/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/car-toy/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/car-toy/floor-plan.png',
+      `${ASSET_BASE}/items/system/car-toy/floor-plan.png`,
     dimensions: [0.31, 0.38, 0.6],
     offset: [0.0005, 0.0005, -0.0075],
     rotation: [0, 0, 0],
@@ -427,10 +433,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'bedside',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bedside-table/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bedside-table/model.glb',
+      `${ASSET_BASE}/items/system/bedside-table/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/bedside-table/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bedside-table/floor-plan.png',
+      `${ASSET_BASE}/items/system/bedside-table/floor-plan.png`,
     dimensions: [0.45, 0.48, 0.46],
     offset: [0.0005, 0, -0.0062],
     rotation: [0, 0, 0],
@@ -443,10 +449,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Sofa',
     tags: ['floor', 'seating'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sofa/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sofa/model.glb',
+      `${ASSET_BASE}/items/system/sofa/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/sofa/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sofa/floor-plan.png',
+      `${ASSET_BASE}/items/system/sofa/floor-plan.png`,
     dimensions: [2.06, 0.74, 1.01],
     offset: [-0.0023, 0.009, 0.0459],
     rotation: [0, 0, 0],
@@ -473,10 +479,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'furniture',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bunkbed/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bunkbed/model.glb',
+      `${ASSET_BASE}/items/system/bunkbed/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/bunkbed/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bunkbed/floor-plan.png',
+      `${ASSET_BASE}/items/system/bunkbed/floor-plan.png`,
     dimensions: [1.65, 1.55, 0.99],
     offset: [0, 0, -0.0886],
     rotation: [0, 0, 0],
@@ -487,10 +493,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     category: 'furniture',
     name: 'My leather couch',
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/my-leather-couch-modp80ha/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/my-leather-couch-modp80ha/models/item_model_kgORhH5vwFK8xub0.glb',
+      `${ASSET_BASE}/items/system/my-leather-couch-modp80ha/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/my-leather-couch-modp80ha/models/item_model_kgORhH5vwFK8xub0.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/my-leather-couch-modp80ha/floor-plan.png',
+      `${ASSET_BASE}/items/system/my-leather-couch-modp80ha/floor-plan.png`,
     dimensions: [2, 0.67, 0.61],
     offset: [-0.0005, 0.3228, -0.004],
     rotation: [0, 0, 0],
@@ -516,10 +522,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'metal',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/office-table/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/office-table/model.glb',
+      `${ASSET_BASE}/items/system/office-table/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/office-table/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/office-table/floor-plan.png',
+      `${ASSET_BASE}/items/system/office-table/floor-plan.png`,
     dimensions: [1.51, 0.76, 0.62],
     offset: [-0.0001, 0, -0.0052],
     rotation: [0, 0, 0],
@@ -545,10 +551,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'walnut',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-table/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-table/model.glb',
+      `${ASSET_BASE}/items/system/dining-table/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/dining-table/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-table/floor-plan.png',
+      `${ASSET_BASE}/items/system/dining-table/floor-plan.png`,
     dimensions: [2.16, 0.7, 0.95],
     offset: [0, 0, -0.0077],
     rotation: [0, 0, 0],
@@ -574,10 +580,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'hobby',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/guitar/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/guitar/model.glb',
+      `${ASSET_BASE}/items/system/guitar/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/guitar/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/guitar/floor-plan.png',
+      `${ASSET_BASE}/items/system/guitar/floor-plan.png`,
     dimensions: [0.4, 1.18, 0.09],
     offset: [-0.0009, 0.3197, -0.0129],
     rotation: [0, 0, 0],
@@ -589,10 +595,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Trash Bin',
     tags: ['floor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/trash-bin/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/trash-bin/model.glb',
+      `${ASSET_BASE}/items/system/trash-bin/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/trash-bin/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/trash-bin/floor-plan.png',
+      `${ASSET_BASE}/items/system/trash-bin/floor-plan.png`,
     dimensions: [0.35, 0.59, 0.42],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -619,10 +625,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'can',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/recessed-light/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/recessed-light/model.glb',
+      `${ASSET_BASE}/items/system/recessed-light/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/recessed-light/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/recessed-light/floor-plan.png',
+      `${ASSET_BASE}/items/system/recessed-light/floor-plan.png`,
     dimensions: [0.23, 0.06, 0.23],
     offset: [0, 0.0057, 0],
     rotation: [0, 0, 0],
@@ -665,10 +671,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'contemporary',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shelf/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shelf/model.glb',
+      `${ASSET_BASE}/items/system/shelf/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/shelf/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shelf/floor-plan.png',
+      `${ASSET_BASE}/items/system/shelf/floor-plan.png`,
     dimensions: [0.74, 0.04, 0.32],
     offset: [0, 0.02, 0],
     rotation: [0, 0, 0],
@@ -682,10 +688,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Table Lamp',
     tags: ['countertop', 'lighting'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/table-lamp/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/table-lamp/model.glb',
+      `${ASSET_BASE}/items/system/table-lamp/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/table-lamp/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/table-lamp/floor-plan.png',
+      `${ASSET_BASE}/items/system/table-lamp/floor-plan.png`,
     dimensions: [0.29, 0.74, 0.67],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -712,10 +718,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'interior',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ceiling-lamp/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ceiling-lamp/model.glb',
+      `${ASSET_BASE}/items/system/ceiling-lamp/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ceiling-lamp/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ceiling-lamp/floor-plan.png',
+      `${ASSET_BASE}/items/system/ceiling-lamp/floor-plan.png`,
     dimensions: [0.55, 0.86, 0.55],
     offset: [0, 0.8545, 0],
     rotation: [0, 0, 0],
@@ -758,10 +764,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'locker',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/closet/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/closet/model.glb',
+      `${ASSET_BASE}/items/system/closet/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/closet/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/closet/floor-plan.png',
+      `${ASSET_BASE}/items/system/closet/floor-plan.png`,
     dimensions: [1.95, 2.26, 0.6],
     offset: [0, 0, -0.0141],
     rotation: [0, 0, 0],
@@ -787,10 +793,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'decor',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coffee-table/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coffee-table/model.glb',
+      `${ASSET_BASE}/items/system/coffee-table/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/coffee-table/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coffee-table/floor-plan.png',
+      `${ASSET_BASE}/items/system/coffee-table/floor-plan.png`,
     dimensions: [1.72, 0.3, 1.04],
     offset: [0, 0, 0.0089],
     rotation: [0, 0, 0],
@@ -816,10 +822,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'bistro',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-chair/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-chair/model.glb',
+      `${ASSET_BASE}/items/system/dining-chair/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/dining-chair/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dining-chair/floor-plan.png',
+      `${ASSET_BASE}/items/system/dining-chair/floor-plan.png`,
     dimensions: [0.47, 0.87, 0.5],
     offset: [0, 0, 0.0016],
     rotation: [0, 0, 0],
@@ -844,10 +850,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'minimalist',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dresser/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dresser/model.glb',
+      `${ASSET_BASE}/items/system/dresser/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/dresser/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/dresser/floor-plan.png',
+      `${ASSET_BASE}/items/system/dresser/floor-plan.png`,
     dimensions: [1.23, 0.73, 0.61],
     offset: [0, 0, -0.0066],
     rotation: [0, 0, 0],
@@ -875,10 +881,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'modular',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ikea-kallax-1x4-moa2y49n/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ikea-kallax-1x4-moa2y49n/models/item_model_ocVHS1SWDex5DeYc.glb',
+      `${ASSET_BASE}/items/system/ikea-kallax-1x4-moa2y49n/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ikea-kallax-1x4-moa2y49n/models/item_model_ocVHS1SWDex5DeYc.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ikea-kallax-1x4-moa2y49n/floor-plan.png',
+      `${ASSET_BASE}/items/system/ikea-kallax-1x4-moa2y49n/floor-plan.png`,
     dimensions: [1.09, 2.06, 0.55],
     offset: [0, -0.0053, 0],
     rotation: [0, 0, 0],
@@ -905,10 +911,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'ceramic',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/indoor-plant/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/indoor-plant/model.glb',
+      `${ASSET_BASE}/items/system/indoor-plant/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/indoor-plant/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/indoor-plant/floor-plan.png',
+      `${ASSET_BASE}/items/system/indoor-plant/floor-plan.png`,
     dimensions: [0.69, 1.63, 0.83],
     offset: [-0.0506, 0, 0.0664],
     rotation: [0, 0, 0],
@@ -933,10 +939,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'industrial',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ironing-board/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ironing-board/model.glb',
+      `${ASSET_BASE}/items/system/ironing-board/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ironing-board/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ironing-board/floor-plan.png',
+      `${ASSET_BASE}/items/system/ironing-board/floor-plan.png`,
     dimensions: [1.31, 0.96, 0.48],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -962,10 +968,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'contemporary',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/double-bed/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/double-bed/model.glb',
+      `${ASSET_BASE}/items/system/double-bed/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/double-bed/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/double-bed/floor-plan.png',
+      `${ASSET_BASE}/items/system/double-bed/floor-plan.png`,
     dimensions: [1.52, 0.71, 2],
     offset: [0.0042, 0, -0.0277],
     rotation: [0, 0, 0],
@@ -993,10 +999,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'sleek',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/floor-lamp/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/floor-lamp/model.glb',
+      `${ASSET_BASE}/items/system/floor-lamp/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/floor-lamp/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/floor-lamp/floor-plan.png',
+      `${ASSET_BASE}/items/system/floor-lamp/floor-plan.png`,
     dimensions: [0.7, 1.86, 0.69],
     offset: [0.0341, 0.0045, 0.0219],
     rotation: [0, 0, 0],
@@ -1023,10 +1029,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Herman Miller Aeron',
     tags: ['office'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/herman-miller-aeron-mo8x36k9/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/herman-miller-aeron-mo8x36k9/models/item_model_YshL4maC8cHtry5c.glb',
+      `${ASSET_BASE}/items/system/herman-miller-aeron-mo8x36k9/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/herman-miller-aeron-mo8x36k9/models/item_model_YshL4maC8cHtry5c.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/herman-miller-aeron-mo8x36k9/floor-plan.png',
+      `${ASSET_BASE}/items/system/herman-miller-aeron-mo8x36k9/floor-plan.png`,
     dimensions: [0.67, 1.06, 0.66],
     offset: [-0.0013, 0.5256, 0.0028],
     rotation: [0, 0, 0],
@@ -1053,10 +1059,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'decor',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/easel/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/easel/model.glb',
+      `${ASSET_BASE}/items/system/easel/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/easel/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/easel/floor-plan.png',
+      `${ASSET_BASE}/items/system/easel/floor-plan.png`,
     dimensions: [0.99, 2.32, 0.55],
     offset: [0, 0.0402, 0.0116],
     rotation: [0, 0, 0],
@@ -1082,10 +1088,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'furniture',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/lounge-chair/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/lounge-chair/model.glb',
+      `${ASSET_BASE}/items/system/lounge-chair/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/lounge-chair/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/lounge-chair/floor-plan.png',
+      `${ASSET_BASE}/items/system/lounge-chair/floor-plan.png`,
     dimensions: [0.68, 1.03, 1.26],
     offset: [0, 0.0034, 0.0894],
     rotation: [0, 0, 0],
@@ -1111,10 +1117,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'computer',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/office-chair/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/office-chair/model.glb',
+      `${ASSET_BASE}/items/system/office-chair/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/office-chair/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/office-chair/floor-plan.png',
+      `${ASSET_BASE}/items/system/office-chair/floor-plan.png`,
     dimensions: [0.66, 1.16, 0.69],
     offset: [0.0024, 0.0015, 0.0332],
     rotation: [0, 0, 0],
@@ -1142,10 +1148,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'luxury',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/piano/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/piano/model.glb',
+      `${ASSET_BASE}/items/system/piano/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/piano/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/piano/floor-plan.png',
+      `${ASSET_BASE}/items/system/piano/floor-plan.png`,
     dimensions: [1.54, 1.44, 0.69],
     offset: [0, 0, 0.0162],
     rotation: [0, 0, 0],
@@ -1173,10 +1179,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'portrait',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/picture/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/picture/model.glb',
+      `${ASSET_BASE}/items/system/picture/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/picture/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/picture/floor-plan.png',
+      `${ASSET_BASE}/items/system/picture/floor-plan.png`,
     dimensions: [1.47, 0.82, 0.06],
     offset: [0, 0.41, 0],
     rotation: [0, 0, 0],
@@ -1202,10 +1208,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'plush',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/rectangular-carpet/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/rectangular-carpet/model.glb',
+      `${ASSET_BASE}/items/system/rectangular-carpet/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/rectangular-carpet/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/rectangular-carpet/floor-plan.png',
+      `${ASSET_BASE}/items/system/rectangular-carpet/floor-plan.png`,
     dimensions: [2.78, 0.04, 1.81],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1233,10 +1239,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'grooming',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/round-mirror/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/round-mirror/model.glb',
+      `${ASSET_BASE}/items/system/round-mirror/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/round-mirror/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/round-mirror/floor-plan.png',
+      `${ASSET_BASE}/items/system/round-mirror/floor-plan.png`,
     dimensions: [0.57, 0.57, 0.05],
     offset: [0, 0.2848, 0],
     rotation: [0, 0, 0],
@@ -1264,10 +1270,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'interior',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/round-carpet/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/round-carpet/model.glb',
+      `${ASSET_BASE}/items/system/round-carpet/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/round-carpet/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/round-carpet/floor-plan.png',
+      `${ASSET_BASE}/items/system/round-carpet/floor-plan.png`,
     dimensions: [1.99, 0.05, 1.99],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1280,10 +1286,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Threadmill',
     tags: ['floor', 'fitness'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/threadmill/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/threadmill/model.glb',
+      `${ASSET_BASE}/items/system/threadmill/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/threadmill/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/threadmill/floor-plan.png',
+      `${ASSET_BASE}/items/system/threadmill/floor-plan.png`,
     dimensions: [2.1, 1.45, 0.9],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1295,10 +1301,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Standing Desk',
     tags: ['office'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/standing-desk-mo8wgz95/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/standing-desk-mo8wgz95/models/item_model_zzZ58018waP8VY6Z.glb',
+      `${ASSET_BASE}/items/system/standing-desk-mo8wgz95/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/standing-desk-mo8wgz95/models/item_model_zzZ58018waP8VY6Z.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/standing-desk-mo8wgz95/floor-plan.png',
+      `${ASSET_BASE}/items/system/standing-desk-mo8wgz95/floor-plan.png`,
     dimensions: [1.41, 0.85, 0.68],
     offset: [0, 0.4203, 0.0019],
     rotation: [0, 0, 0],
@@ -1310,10 +1316,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Sprinkler',
     tags: ['ceiling', 'safety'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sprinkler/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sprinkler/model.glb',
+      `${ASSET_BASE}/items/system/sprinkler/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/sprinkler/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sprinkler/floor-plan.png',
+      `${ASSET_BASE}/items/system/sprinkler/floor-plan.png`,
     dimensions: [0.09, 0.04, 0.09],
     offset: [0, 0.0386, 0],
     rotation: [Math.PI, 0, 0],
@@ -1341,10 +1347,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'appliance',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/exit-sign/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/exit-sign/model.glb',
+      `${ASSET_BASE}/items/system/exit-sign/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/exit-sign/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/exit-sign/floor-plan.png',
+      `${ASSET_BASE}/items/system/exit-sign/floor-plan.png`,
     dimensions: [0.54, 0.27, 0.1],
     offset: [0, 0.0036, 0.0452],
     rotation: [0, 0, 0],
@@ -1372,10 +1378,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'stitching',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sewing-machine/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sewing-machine/model.glb',
+      `${ASSET_BASE}/items/system/sewing-machine/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/sewing-machine/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sewing-machine/floor-plan.png',
+      `${ASSET_BASE}/items/system/sewing-machine/floor-plan.png`,
     dimensions: [0.83, 0.68, 0.32],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1387,10 +1393,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Television',
     tags: ['floor', 'electronics'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/television/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/television/model.glb',
+      `${ASSET_BASE}/items/system/television/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/television/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/television/floor-plan.png',
+      `${ASSET_BASE}/items/system/television/floor-plan.png`,
     dimensions: [1.62, 1.07, 0.38],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1402,10 +1408,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Power Outlet',
     tags: ['electric'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/power-outlet-moa09g0o/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/power-outlet-moa09g0o/models/item_model_PTDhACPTrrrtLLeI.glb',
+      `${ASSET_BASE}/items/system/power-outlet-moa09g0o/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/power-outlet-moa09g0o/models/item_model_PTDhACPTrrrtLLeI.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/power-outlet-moa09g0o/floor-plan.png',
+      `${ASSET_BASE}/items/system/power-outlet-moa09g0o/floor-plan.png`,
     dimensions: [0.09, 0.09, 0.03],
     offset: [0, 0.045, 0.0117],
     rotation: [0, 0, 0],
@@ -1434,10 +1440,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'climate',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ac-block/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ac-block/model.glb',
+      `${ASSET_BASE}/items/system/ac-block/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ac-block/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ac-block/floor-plan.png',
+      `${ASSET_BASE}/items/system/ac-block/floor-plan.png`,
     dimensions: [1.06, 0.95, 1.06],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1449,10 +1455,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Stereo Speaker',
     tags: ['floor', 'electronics'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stereo-speaker/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stereo-speaker/model.glb',
+      `${ASSET_BASE}/items/system/stereo-speaker/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/stereo-speaker/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stereo-speaker/floor-plan.png',
+      `${ASSET_BASE}/items/system/stereo-speaker/floor-plan.png`,
     dimensions: [0.23, 1, 0.34],
     offset: [0, 0, -0.0129],
     rotation: [0, 0, 0],
@@ -1464,10 +1470,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Thermostat',
     tags: ['wall', 'climate', 'electrical'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/thermostat/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/thermostat/model.glb',
+      `${ASSET_BASE}/items/system/thermostat/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/thermostat/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/thermostat/floor-plan.png',
+      `${ASSET_BASE}/items/system/thermostat/floor-plan.png`,
     dimensions: [0.1, 0.1, 0.01],
     offset: [0, 0.0013, 0.0022],
     rotation: [0, 0, 0],
@@ -1480,10 +1486,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Toaster',
     tags: ['countertop', 'electronics'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toaster/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toaster/model.glb',
+      `${ASSET_BASE}/items/system/toaster/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/toaster/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toaster/floor-plan.png',
+      `${ASSET_BASE}/items/system/toaster/floor-plan.png`,
     dimensions: [0.28, 0.23, 0.17],
     offset: [-0.0057, 0, 0],
     rotation: [0, 0, 0],
@@ -1510,10 +1516,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'breakfast',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kettle/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kettle/model.glb',
+      `${ASSET_BASE}/items/system/kettle/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/kettle/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kettle/floor-plan.png',
+      `${ASSET_BASE}/items/system/kettle/floor-plan.png`,
     dimensions: [0.24, 0.25, 0.18],
     offset: [-0.026, 0, 0],
     rotation: [0, 0, 0],
@@ -1541,10 +1547,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'red',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/hydrant/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/hydrant/model.glb',
+      `${ASSET_BASE}/items/system/hydrant/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/hydrant/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/hydrant/floor-plan.png',
+      `${ASSET_BASE}/items/system/hydrant/floor-plan.png`,
     dimensions: [0.64, 0.88, 0.64],
     offset: [-0.0046, 0, -0.0008],
     rotation: [0, 0, 0],
@@ -1572,10 +1578,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'electronic',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fire-detector/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fire-detector/model.glb',
+      `${ASSET_BASE}/items/system/fire-detector/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/fire-detector/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fire-detector/floor-plan.png',
+      `${ASSET_BASE}/items/system/fire-detector/floor-plan.png`,
     dimensions: [0.12, 0.19, 0.07],
     offset: [0.0281, 0.012, 0.0015],
     rotation: [0, 0, 0],
@@ -1588,10 +1594,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Smoke Detector',
     tags: ['ceiling', 'safety'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/smoke-detector/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/smoke-detector/model.glb',
+      `${ASSET_BASE}/items/system/smoke-detector/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/smoke-detector/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/smoke-detector/floor-plan.png',
+      `${ASSET_BASE}/items/system/smoke-detector/floor-plan.png`,
     dimensions: [0.16, 0.05, 0.16],
     offset: [0, 0.0492, 0],
     rotation: [Math.PI, 0, 0],
@@ -1619,10 +1625,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'brewing',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coffee-machine/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coffee-machine/model.glb',
+      `${ASSET_BASE}/items/system/coffee-machine/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/coffee-machine/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/coffee-machine/floor-plan.png',
+      `${ASSET_BASE}/items/system/coffee-machine/floor-plan.png`,
     dimensions: [0.16, 0.24, 0.23],
     offset: [0.0003, 0.0003, -0.0366],
     rotation: [0, 0, 0],
@@ -1649,10 +1655,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'circulation',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ceiling-fan/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ceiling-fan/model.glb',
+      `${ASSET_BASE}/items/system/ceiling-fan/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ceiling-fan/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ceiling-fan/floor-plan.png',
+      `${ASSET_BASE}/items/system/ceiling-fan/floor-plan.png`,
     dimensions: [0.92, 0.35, 1.04],
     offset: [-0.1371, 0.3448, 0],
     rotation: [0, 0, 0],
@@ -1684,10 +1690,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'sleek',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/iron/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/iron/model.glb',
+      `${ASSET_BASE}/items/system/iron/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/iron/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/iron/floor-plan.png',
+      `${ASSET_BASE}/items/system/iron/floor-plan.png`,
     dimensions: [0.36, 0.24, 0.21],
     offset: [0.026, 0, 0],
     rotation: [0, 0, 0],
@@ -1714,10 +1720,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'sleek',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/air-conditioning/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/air-conditioning/model.glb',
+      `${ASSET_BASE}/items/system/air-conditioning/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/air-conditioning/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/air-conditioning/floor-plan.png',
+      `${ASSET_BASE}/items/system/air-conditioning/floor-plan.png`,
     dimensions: [1.56, 0.6, 0.41],
     offset: [0, 0.3, 0.2018],
     rotation: [0, 0, 0],
@@ -1745,10 +1751,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'productivity',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/computer/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/computer/model.glb',
+      `${ASSET_BASE}/items/system/computer/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/computer/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/computer/floor-plan.png',
+      `${ASSET_BASE}/items/system/computer/floor-plan.png`,
     dimensions: [0.68, 0.48, 0.19],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1776,10 +1782,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'smart',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/alarm-keypad/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/alarm-keypad/model.glb',
+      `${ASSET_BASE}/items/system/alarm-keypad/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/alarm-keypad/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/alarm-keypad/floor-plan.png',
+      `${ASSET_BASE}/items/system/alarm-keypad/floor-plan.png`,
     dimensions: [0.18, 0.13, 0.03],
     offset: [0, 0.0671, -0.0002],
     rotation: [1.5708, 0, 0],
@@ -1808,10 +1814,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'black',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ev-wall-charger/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ev-wall-charger/model.glb',
+      `${ASSET_BASE}/items/system/ev-wall-charger/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ev-wall-charger/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ev-wall-charger/floor-plan.png',
+      `${ASSET_BASE}/items/system/ev-wall-charger/floor-plan.png`,
     dimensions: [0.29, 0.65, 0.17],
     offset: [-0.0677, 0.2979, 0.1503],
     rotation: [0, 0, 0],
@@ -1839,10 +1845,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'appliance',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/electric-panel/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/electric-panel/model.glb',
+      `${ASSET_BASE}/items/system/electric-panel/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/electric-panel/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/electric-panel/floor-plan.png',
+      `${ASSET_BASE}/items/system/electric-panel/floor-plan.png`,
     dimensions: [0.4, 0.98, 0.11],
     offset: [0, 0.0036, 0.0611],
     rotation: [0, 0, 0],
@@ -1870,10 +1876,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'hygiene',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bathroom-sink/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bathroom-sink/model.glb',
+      `${ASSET_BASE}/items/system/bathroom-sink/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/bathroom-sink/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bathroom-sink/floor-plan.png',
+      `${ASSET_BASE}/items/system/bathroom-sink/floor-plan.png`,
     dimensions: [1.83, 0.97, 0.63],
     offset: [0.1037, 0, 0.0221],
     rotation: [0, 0, 0],
@@ -1900,10 +1906,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'sleek',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-angle/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-angle/model.glb',
+      `${ASSET_BASE}/items/system/shower-angle/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/shower-angle/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-angle/floor-plan.png',
+      `${ASSET_BASE}/items/system/shower-angle/floor-plan.png`,
     dimensions: [0.83, 1.81, 0.83],
     offset: [0.4102, 0, -0.4102],
     rotation: [0, 0, 0],
@@ -1915,10 +1921,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Toilet Paper',
     tags: ['wall', 'decor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toilet-paper/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toilet-paper/model.glb',
+      `${ASSET_BASE}/items/system/toilet-paper/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/toilet-paper/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toilet-paper/floor-plan.png',
+      `${ASSET_BASE}/items/system/toilet-paper/floor-plan.png`,
     dimensions: [0.26, 0.27, 0.24],
     offset: [0, 0.145, 0.1147],
     rotation: [0, 0, 0],
@@ -1931,10 +1937,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Washing Machine',
     tags: ['floor', 'large', 'electronics'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/washing-machine/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/washing-machine/model.glb',
+      `${ASSET_BASE}/items/system/washing-machine/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/washing-machine/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/washing-machine/floor-plan.png',
+      `${ASSET_BASE}/items/system/washing-machine/floor-plan.png`,
     dimensions: [0.6, 0.86, 0.53],
     offset: [0, 0, -0.0114],
     rotation: [0, 0, 0],
@@ -1962,10 +1968,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'woven',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-rug/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-rug/model.glb',
+      `${ASSET_BASE}/items/system/shower-rug/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/shower-rug/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-rug/floor-plan.png',
+      `${ASSET_BASE}/items/system/shower-rug/floor-plan.png`,
     dimensions: [0.77, 0.03, 0.48],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -1991,10 +1997,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'spa',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bathtub/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bathtub/model.glb',
+      `${ASSET_BASE}/items/system/bathtub/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/bathtub/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bathtub/floor-plan.png',
+      `${ASSET_BASE}/items/system/bathtub/floor-plan.png`,
     dimensions: [2.34, 0.79, 1.11],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2020,10 +2026,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'linen',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/laundry-bag/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/laundry-bag/model.glb',
+      `${ASSET_BASE}/items/system/laundry-bag/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/laundry-bag/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/laundry-bag/floor-plan.png',
+      `${ASSET_BASE}/items/system/laundry-bag/floor-plan.png`,
     dimensions: [0.46, 0.78, 0.48],
     offset: [0, 0, -0.0006],
     rotation: [0, 0, 0],
@@ -2035,10 +2041,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Squared Shower',
     tags: ['floor', 'large'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-square/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-square/model.glb',
+      `${ASSET_BASE}/items/system/shower-square/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/shower-square/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/shower-square/floor-plan.png',
+      `${ASSET_BASE}/items/system/shower-square/floor-plan.png`,
     dimensions: [0.81, 1.8, 0.81],
     offset: [0.4, 0, -0.3995],
     rotation: [0, 0, 0],
@@ -2063,10 +2069,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'bathroom',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/drying-rack/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/drying-rack/model.glb',
+      `${ASSET_BASE}/items/system/drying-rack/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/drying-rack/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/drying-rack/floor-plan.png',
+      `${ASSET_BASE}/items/system/drying-rack/floor-plan.png`,
     dimensions: [1.79, 1.05, 0.58],
     offset: [0, -0.0058, 0],
     rotation: [0, 0, 0],
@@ -2078,10 +2084,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Toilet',
     tags: ['floor', 'large'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toilet/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toilet/model.glb',
+      `${ASSET_BASE}/items/system/toilet/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/toilet/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/toilet/floor-plan.png',
+      `${ASSET_BASE}/items/system/toilet/floor-plan.png`,
     dimensions: [0.42, 0.82, 0.72],
     offset: [0, 0, -0.2393],
     rotation: [0, 0, 0],
@@ -2109,10 +2115,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'contemporary',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/microwave/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/microwave/model.glb',
+      `${ASSET_BASE}/items/system/microwave/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/microwave/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/microwave/floor-plan.png',
+      `${ASSET_BASE}/items/system/microwave/floor-plan.png`,
     dimensions: [0.52, 0.27, 0.41],
     offset: [0, 0, -0.0225],
     rotation: [0, 0, 0],
@@ -2138,10 +2144,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'cooking',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/cutting-board/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/cutting-board/model.glb',
+      `${ASSET_BASE}/items/system/cutting-board/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/cutting-board/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/cutting-board/floor-plan.png',
+      `${ASSET_BASE}/items/system/cutting-board/floor-plan.png`,
     dimensions: [0.27, 0.07, 0.41],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2169,10 +2175,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'baking',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-utensils/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-utensils/model.glb',
+      `${ASSET_BASE}/items/system/kitchen-utensils/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/kitchen-utensils/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-utensils/floor-plan.png',
+      `${ASSET_BASE}/items/system/kitchen-utensils/floor-plan.png`,
     dimensions: [0.23, 0.49, 0.21],
     offset: [0.0184, 0, 0.0165],
     rotation: [0, 0, 0],
@@ -2199,10 +2205,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'polished',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-counter/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-counter/model.glb',
+      `${ASSET_BASE}/items/system/kitchen-counter/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/kitchen-counter/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-counter/floor-plan.png',
+      `${ASSET_BASE}/items/system/kitchen-counter/floor-plan.png`,
     dimensions: [1.96, 0.73, 0.63],
     offset: [0.0012, 0, -0.0004],
     rotation: [0, 0, 0],
@@ -2230,10 +2236,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'minimalist',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/hood/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/hood/model.glb',
+      `${ASSET_BASE}/items/system/hood/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/hood/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/hood/floor-plan.png',
+      `${ASSET_BASE}/items/system/hood/floor-plan.png`,
     dimensions: [1.21, 0.52, 0.51],
     offset: [0, 0.2718, 0],
     rotation: [0, 0, 0],
@@ -2260,10 +2266,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'entertaining',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/wooden-kitchen-bar-moa2hhh4/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/wooden-kitchen-bar-moa2hhh4/models/item_model_c6iR1M2eE2I8k5M3.glb',
+      `${ASSET_BASE}/items/system/wooden-kitchen-bar-moa2hhh4/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/wooden-kitchen-bar-moa2hhh4/models/item_model_c6iR1M2eE2I8k5M3.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/wooden-kitchen-bar-moa2hhh4/floor-plan.png',
+      `${ASSET_BASE}/items/system/wooden-kitchen-bar-moa2hhh4/floor-plan.png`,
     dimensions: [2.5, 1.06, 0.96],
     offset: [0.0003, 0.5322, -0.0024],
     rotation: [0, 0, 0],
@@ -2289,10 +2295,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'organization',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-cabinet/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-cabinet/model.glb',
+      `${ASSET_BASE}/items/system/kitchen-cabinet/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/kitchen-cabinet/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-cabinet/floor-plan.png',
+      `${ASSET_BASE}/items/system/kitchen-cabinet/floor-plan.png`,
     dimensions: [1.65, 1.09, 0.77],
     offset: [0, 0.0004, 0],
     rotation: [0, 0, 0],
@@ -2319,10 +2325,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'pantry',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen/model.glb',
+      `${ASSET_BASE}/items/system/kitchen/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/kitchen/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen/floor-plan.png',
+      `${ASSET_BASE}/items/system/kitchen/floor-plan.png`,
     dimensions: [2.38, 1.03, 0.84],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2350,10 +2356,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'utensil',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/frying-pan/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/frying-pan/model.glb',
+      `${ASSET_BASE}/items/system/frying-pan/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/frying-pan/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/frying-pan/floor-plan.png',
+      `${ASSET_BASE}/items/system/frying-pan/floor-plan.png`,
     dimensions: [0.36, 0.09, 0.64],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2380,10 +2386,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'colorful',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fruits/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fruits/model.glb',
+      `${ASSET_BASE}/items/system/fruits/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/fruits/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fruits/floor-plan.png',
+      `${ASSET_BASE}/items/system/fruits/floor-plan.png`,
     dimensions: [0.39, 0.27, 0.39],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2410,10 +2416,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'sleek',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fridge/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fridge/model.glb',
+      `${ASSET_BASE}/items/system/fridge/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/fridge/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fridge/floor-plan.png',
+      `${ASSET_BASE}/items/system/fridge/floor-plan.png`,
     dimensions: [0.7, 1.92, 0.72],
     offset: [0, 0, -0.0507],
     rotation: [0, 0, 0],
@@ -2440,10 +2446,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'utility',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-shelf/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-shelf/model.glb',
+      `${ASSET_BASE}/items/system/kitchen-shelf/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/kitchen-shelf/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/kitchen-shelf/floor-plan.png',
+      `${ASSET_BASE}/items/system/kitchen-shelf/floor-plan.png`,
     dimensions: [2.21, 0.89, 0.52],
     offset: [-0.0009, 0.4478, 0],
     rotation: [0, 0, 0],
@@ -2456,10 +2462,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Wine Bottle',
     tags: ['countertop', 'decor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/wine-bottle/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/wine-bottle/model.glb',
+      `${ASSET_BASE}/items/system/wine-bottle/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/wine-bottle/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/wine-bottle/floor-plan.png',
+      `${ASSET_BASE}/items/system/wine-bottle/floor-plan.png`,
     dimensions: [0.38, 0.35, 0.17],
     offset: [-0.0461, 0, 0.0135],
     rotation: [0, 0, 0],
@@ -2471,10 +2477,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Stove',
     tags: ['floor', 'large'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stove/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stove/model.glb',
+      `${ASSET_BASE}/items/system/stove/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/stove/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/stove/floor-plan.png',
+      `${ASSET_BASE}/items/system/stove/floor-plan.png`,
     dimensions: [0.92, 0.85, 0.76],
     offset: [0.0043, 0, -0.0505],
     rotation: [0, 0, 0],
@@ -2502,10 +2508,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'contemporary',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ball/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ball/model.glb',
+      `${ASSET_BASE}/items/system/ball/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/ball/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/ball/floor-plan.png',
+      `${ASSET_BASE}/items/system/ball/floor-plan.png`,
     dimensions: [0.24, 0.24, 0.24],
     offset: [-0.0001, 0.1194, -0.0001],
     rotation: [0, 0, 0],
@@ -2533,10 +2539,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'decorative',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bush/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bush/model.glb',
+      `${ASSET_BASE}/items/system/bush/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/bush/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/bush/floor-plan.png',
+      `${ASSET_BASE}/items/system/bush/floor-plan.png`,
     dimensions: [3, 1.04, 1.01],
     offset: [-0.1463, 0.0094, -0.113],
     rotation: [0, 0, 0],
@@ -2564,10 +2570,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'activity',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/basket-hoop/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/basket-hoop/model.glb',
+      `${ASSET_BASE}/items/system/basket-hoop/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/basket-hoop/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/basket-hoop/floor-plan.png',
+      `${ASSET_BASE}/items/system/basket-hoop/floor-plan.png`,
     dimensions: [0.58, 1.78, 0.56],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2592,10 +2598,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'outdoor',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/parking-spot/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/parking-spot/model.glb',
+      `${ASSET_BASE}/items/system/parking-spot/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/parking-spot/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/parking-spot/floor-plan.png',
+      `${ASSET_BASE}/items/system/parking-spot/floor-plan.png`,
     dimensions: [4.95, 0.12, 2.28],
     offset: [0, 0.0121, 0.015],
     rotation: [0, 0, 0],
@@ -2623,10 +2629,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'nature',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/palm/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/palm/model.glb',
+      `${ASSET_BASE}/items/system/palm/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/palm/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/palm/floor-plan.png',
+      `${ASSET_BASE}/items/system/palm/floor-plan.png`,
     dimensions: [0.525, 4.5, 0.496],
     offset: [0, 0.08, 0],
     rotation: [0, 0, 0],
@@ -2638,10 +2644,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Sunbed',
     tags: ['leisure', 'seating', 'floor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sunbed/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sunbed/model.glb',
+      `${ASSET_BASE}/items/system/sunbed/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/sunbed/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/sunbed/floor-plan.png',
+      `${ASSET_BASE}/items/system/sunbed/floor-plan.png`,
     dimensions: [0.86, 1.13, 1.01],
     offset: [0, 0.0516, 0.0137],
     rotation: [0, 0, 0],
@@ -2668,10 +2674,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'woodland',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fir-tree/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fir-tree/model.glb',
+      `${ASSET_BASE}/items/system/fir-tree/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/fir-tree/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/fir-tree/floor-plan.png',
+      `${ASSET_BASE}/items/system/fir-tree/floor-plan.png`,
     dimensions: [0.27, 3, 0.23],
     offset: [0.02, 0.05, -0.06],
     rotation: [0, 0, 0],
@@ -2683,10 +2689,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Tree',
     tags: ['vegetation'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tree/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tree/model.glb',
+      `${ASSET_BASE}/items/system/tree/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/tree/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tree/floor-plan.png',
+      `${ASSET_BASE}/items/system/tree/floor-plan.png`,
     dimensions: [0.79, 5, 0.85],
     offset: [-0.02, 0.17, -0.04],
     rotation: [0, 0, 0],
@@ -2698,10 +2704,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Skate',
     tags: ['leisure', 'kids', 'floor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/skate/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/skate/model.glb',
+      `${ASSET_BASE}/items/system/skate/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/skate/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/skate/floor-plan.png',
+      `${ASSET_BASE}/items/system/skate/floor-plan.png`,
     dimensions: [0.86, 0.11, 0.2],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2713,10 +2719,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: '1967 Chevrolet Camaro',
     tags: ['car'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/1967-chevrolet-camaro-moa24wsf/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/1967-chevrolet-camaro-moa24wsf/models/item_model_vUIp1N69V9RXLqoJ.glb',
+      `${ASSET_BASE}/items/system/1967-chevrolet-camaro-moa24wsf/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/1967-chevrolet-camaro-moa24wsf/models/item_model_vUIp1N69V9RXLqoJ.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/1967-chevrolet-camaro-moa24wsf/floor-plan.png',
+      `${ASSET_BASE}/items/system/1967-chevrolet-camaro-moa24wsf/floor-plan.png`,
     dimensions: [4.09, 1.22, 1.89],
     offset: [-0.0018, 0.5987, 0.0205],
     rotation: [0, 0, 0],
@@ -2744,10 +2750,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'timber',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/outdoor-playhouse/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/outdoor-playhouse/model.glb',
+      `${ASSET_BASE}/items/system/outdoor-playhouse/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/outdoor-playhouse/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/outdoor-playhouse/floor-plan.png',
+      `${ASSET_BASE}/items/system/outdoor-playhouse/floor-plan.png`,
     dimensions: [0.3, 0.47, 0.72],
     offset: [-0.0062, 0, -0.0268],
     rotation: [0, 0, 0],
@@ -2775,10 +2781,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'summer',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/patio-umbrella/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/patio-umbrella/model.glb',
+      `${ASSET_BASE}/items/system/patio-umbrella/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/patio-umbrella/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/patio-umbrella/floor-plan.png',
+      `${ASSET_BASE}/items/system/patio-umbrella/floor-plan.png`,
     dimensions: [0.139, 3.603, 0.15],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2803,10 +2809,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'support',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/pillar/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/pillar/model.glb',
+      `${ASSET_BASE}/items/system/pillar/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/pillar/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/pillar/floor-plan.png',
+      `${ASSET_BASE}/items/system/pillar/floor-plan.png`,
     dimensions: [0.34, 1.26, 0.3],
     offset: [0, 0, 0],
     rotation: [0, 0, 0],
@@ -2834,10 +2840,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'commute',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/scooter/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/scooter/model.glb',
+      `${ASSET_BASE}/items/system/scooter/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/scooter/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/scooter/floor-plan.png',
+      `${ASSET_BASE}/items/system/scooter/floor-plan.png`,
     dimensions: [0.85, 0.85, 0.45],
     offset: [0.1127, 0.0017, 0.1744],
     rotation: [0, 0, 0],
@@ -2863,10 +2869,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
       'commuting',
     ],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tesla/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tesla/model.glb',
+      `${ASSET_BASE}/items/system/tesla/thumbnail.png`,
+    src: `${ASSET_BASE}/items/system/tesla/model.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/system/tesla/floor-plan.png',
+      `${ASSET_BASE}/items/system/tesla/floor-plan.png`,
     dimensions: [1.98, 1.62, 4.76],
     offset: [0.0039, -0.0102, -0.0148],
     rotation: [0, 0, 0],
@@ -2878,10 +2884,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Dishwasher',
     tags: ['dishwasher', 'appliance', 'kitchen', 'floor'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/users/user_7hUFMrlrAX1vtIwT/dishwasher-movn72ls/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/users/user_7hUFMrlrAX1vtIwT/dishwasher-movn72ls/models/item_model_fFvQuIjpPISAraGN.glb',
+      `${ASSET_BASE}/items/users/user_7hUFMrlrAX1vtIwT/dishwasher-movn72ls/thumbnail.png`,
+    src: `${ASSET_BASE}/items/users/user_7hUFMrlrAX1vtIwT/dishwasher-movn72ls/models/item_model_fFvQuIjpPISAraGN.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/users/user_7hUFMrlrAX1vtIwT/dishwasher-movn72ls/floor-plan.png',
+      `${ASSET_BASE}/items/users/user_7hUFMrlrAX1vtIwT/dishwasher-movn72ls/floor-plan.png`,
     dimensions: [0.79, 1.01, 0.76],
     offset: [0.0026, 0.5004, 0.0011],
     rotation: [0, -0.0349, 0],
@@ -2893,10 +2899,10 @@ export const CATALOG_ITEMS: AssetInput[] = [
     name: 'Fireplace',
     tags: ['fireplace', 'hearth', 'mantel', 'wall'],
     thumbnail:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/users/user_7hUFMrlrAX1vtIwT/fireplace-movn1fnn/thumbnail.png',
-    src: 'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/users/user_7hUFMrlrAX1vtIwT/fireplace-movn1fnn/models/item_model_vNBpPC3gCrIIqFUS.glb',
+      `${ASSET_BASE}/items/users/user_7hUFMrlrAX1vtIwT/fireplace-movn1fnn/thumbnail.png`,
+    src: `${ASSET_BASE}/items/users/user_7hUFMrlrAX1vtIwT/fireplace-movn1fnn/models/item_model_vNBpPC3gCrIIqFUS.glb`,
     floorPlanUrl:
-      'https://byrpxoiotywskoojsrzd.supabase.co/storage/v1/object/public/items/users/user_7hUFMrlrAX1vtIwT/fireplace-movn1fnn/floor-plan.png',
+      `${ASSET_BASE}/items/users/user_7hUFMrlrAX1vtIwT/fireplace-movn1fnn/floor-plan.png`,
     dimensions: [1, 0.83, 0.18],
     offset: [-0.0001, 0.4116, -0.0015],
     rotation: [0, 0, 0],

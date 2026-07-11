@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description: 'Privacy Policy for Pascal Editor and the Pascal platform.',
+  title: 'Datenschutzerklärung — Plixa Planer',
+  description: 'Datenschutzerklärung des Plixa Planers (HERRMANN SARL).',
 }
 
 export default function PrivacyPage() {
@@ -16,186 +16,199 @@ export default function PrivacyPage() {
               className="text-muted-foreground transition-colors hover:text-foreground"
               href="/"
             >
-              Home
+              Startseite
             </Link>
             <span className="text-muted-foreground">/</span>
             <Link
               className="text-muted-foreground transition-colors hover:text-foreground"
               href="/terms"
             >
-              Terms of Service
+              Nutzungsbedingungen
             </Link>
             <span className="text-muted-foreground">|</span>
-            <span className="font-medium text-foreground">Privacy Policy</span>
+            <span className="font-medium text-foreground">Datenschutz</span>
           </nav>
         </div>
       </header>
 
       <main className="container mx-auto max-w-3xl px-6 py-12">
         <article className="prose prose-neutral dark:prose-invert max-w-none">
-          <h1 className="mb-2 font-bold text-3xl">Privacy Policy</h1>
-          <p className="mb-8 text-muted-foreground text-sm">Effective Date: February 20, 2026</p>
+          <h1 className="mb-2 font-bold text-3xl">Datenschutzerklärung</h1>
+          <p className="mb-8 text-muted-foreground text-sm">Stand: Juli 2026</p>
 
           <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">1. Introduction</h2>
+            <h2 className="font-semibold text-xl">1. Verantwortlicher</h2>
             <p className="text-foreground/90 leading-relaxed">
-              Pascal Group Inc. (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) operates the
-              Pascal Editor and Platform at pascal.app. This Privacy Policy explains how we collect,
-              use, and protect your information when you use our services.
+              Verantwortlich für die Datenverarbeitung im Sinne der Datenschutz-Grundverordnung
+              (DSGVO) ist:
             </p>
-          </section>
-
-          <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">2. Information We Collect</h2>
-
-            <h3 className="mt-4 font-medium text-lg">Account Information</h3>
             <p className="text-foreground/90 leading-relaxed">
-              When you create an account, we collect:
-            </p>
-            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
-              <li>Email address</li>
-              <li>Name</li>
-              <li>Profile picture/avatar</li>
-              <li>OAuth provider data (from Google when you sign in with Google)</li>
-            </ul>
-
-            <h3 className="mt-4 font-medium text-lg">Project Data</h3>
-            <p className="text-foreground/90 leading-relaxed">
-              When you use the Platform, we store your projects, including 3D building designs,
-              floor plans, and associated metadata.
-            </p>
-
-            <h3 className="mt-4 font-medium text-lg">Usage Analytics</h3>
-            <p className="text-foreground/90 leading-relaxed">
-              We use Vercel Analytics and Speed Insights to collect anonymized usage data, including
-              page views, performance metrics, and general usage patterns. This helps us improve the
-              Platform.
-            </p>
-          </section>
-
-          <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">3. How We Use Your Information</h2>
-            <p className="text-foreground/90 leading-relaxed">We use your information to:</p>
-            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
-              <li>Provide and maintain your account</li>
-              <li>Store and sync your projects across devices</li>
-              <li>Improve our services based on usage patterns</li>
-              <li>
-                Send optional email notifications about new features and updates (you can opt out in
-                settings)
-              </li>
-              <li>Respond to support requests</li>
-              <li>Ensure platform security and prevent abuse</li>
-            </ul>
-          </section>
-
-          <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">4. Data Storage</h2>
-            <p className="text-foreground/90 leading-relaxed">
-              Your data is stored using Supabase (PostgreSQL database) on secure cloud
-              infrastructure. We implement appropriate technical and organizational measures to
-              protect your data.
-            </p>
-          </section>
-
-          <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">5. Third-Party Services</h2>
-            <p className="text-foreground/90 leading-relaxed">
-              We use the following third-party services to operate the Platform:
-            </p>
-            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
-              <li>
-                <strong>Google</strong> - OAuth authentication for sign-in
-              </li>
-              <li>
-                <strong>Vercel</strong> - Application hosting, analytics, and performance monitoring
-              </li>
-              <li>
-                <strong>Supabase</strong> - Database hosting and authentication infrastructure
-              </li>
-            </ul>
-            <p className="mt-4 text-foreground/90 leading-relaxed">
-              Each of these services has their own privacy policies governing their handling of your
-              data.
-            </p>
-          </section>
-
-          <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">6. Cookies</h2>
-            <p className="text-foreground/90 leading-relaxed">
-              We use minimal cookies necessary for the Platform to function:
-            </p>
-            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
-              <li>
-                <strong>Session cookies</strong> - Essential for authentication and keeping you
-                signed in
-              </li>
-              <li>
-                <strong>Analytics cookies</strong> - Used by Vercel Analytics to collect anonymized
-                usage data
-              </li>
-            </ul>
-          </section>
-
-          <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">7. Your Rights</h2>
-            <p className="text-foreground/90 leading-relaxed">You have the right to:</p>
-            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
-              <li>Access the personal data we hold about you</li>
-              <li>Request correction of inaccurate data</li>
-              <li>Request deletion of your data</li>
-              <li>Export your project data</li>
-              <li>Opt out of marketing communications</li>
-            </ul>
-            <p className="mt-4 text-foreground/90 leading-relaxed">
-              To exercise any of these rights, please contact us at{' '}
+              HERRMANN SARL
+              <br />
+              42 Rue d&apos;Emmersweiler
+              <br />
+              57600 Forbach
+              <br />
+              Frankreich
+              <br />
+              E-Mail:{' '}
               <a
                 className="text-foreground underline hover:text-foreground/80"
-                href="mailto:support@pascal.app"
+                href="mailto:info@meisterbetrieb-herrmann.de"
               >
-                support@pascal.app
+                info@meisterbetrieb-herrmann.de
               </a>
-              .
             </p>
           </section>
 
           <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">8. Data Retention</h2>
+            <h2 className="font-semibold text-xl">2. Überblick</h2>
             <p className="text-foreground/90 leading-relaxed">
-              We retain your data for as long as your account is active. If you delete your account,
-              we will delete your personal data and project data within 30 days, except where we are
-              required by law to retain certain information.
+              Der Plixa Planer ist ein Browser-Werkzeug zum Planen von Innenausbau und Grundrissen.
+              Wir gehen sparsam mit Daten um: Deine Entwürfe bleiben grundsätzlich lokal in deinem
+              Browser. Es gibt keine Konto-Pflicht, kein Tracking und keine Weitergabe deiner
+              Entwürfe zu Werbezwecken. Diese Erklärung beschreibt, welche Daten bei der Nutzung
+              tatsächlich anfallen.
             </p>
           </section>
 
           <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">9. Children&apos;s Privacy</h2>
+            <h2 className="font-semibold text-xl">3. Welche Daten verarbeitet werden</h2>
+
+            <h3 className="mt-4 font-medium text-lg">Lokale Speicherung im Browser</h3>
             <p className="text-foreground/90 leading-relaxed">
-              The Platform is not intended for children under 13. We do not knowingly collect
-              personal information from children under 13. If you believe we have collected such
-              information, please contact us immediately.
+              Deine Szenen, Projekte und Einstellungen werden im lokalen Speicher deines Browsers
+              (localStorage/IndexedDB) auf deinem Gerät abgelegt. Diese Daten verlassen dein Gerät
+              nicht und werden nicht an uns übertragen, solange du sie nicht ausdrücklich speicherst
+              oder teilst.
+            </p>
+
+            <h3 className="mt-4 font-medium text-lg">Möbel-Katalog (Cloudflare R2)</h3>
+            <p className="text-foreground/90 leading-relaxed">
+              Die 3D-Modelle und Vorschaubilder des Möbel-Katalogs werden aus unserem eigenen
+              Objektspeicher bei Cloudflare R2 ausgeliefert. Beim Laden dieser Dateien wird technisch
+              bedingt deine IP-Adresse an Cloudflare übermittelt, damit die Inhalte an deinen Browser
+              gesendet werden können. Es werden dabei keine Katalog-Inhalte von Dritt-Servern (z. B.
+              Supabase) mehr geladen.
+            </p>
+
+            <h3 className="mt-4 font-medium text-lg">Hosting</h3>
+            <p className="text-foreground/90 leading-relaxed">
+              Die Anwendung wird bei Vercel gehostet. Beim Aufruf werden zur Auslieferung und
+              Absicherung technisch notwendige Server-Protokolldaten verarbeitet (u. a. IP-Adresse,
+              Zeitpunkt, angefragte Ressource, Browsertyp).
+            </p>
+
+            <h3 className="mt-4 font-medium text-lg">Reichweitenmessung</h3>
+            <p className="text-foreground/90 leading-relaxed">
+              Standardmäßig findet keine Analyse deines Nutzungsverhaltens statt. Sofern für dieses
+              Angebot Vercel Analytics bzw. Speed Insights aktiviert ist, werden lediglich
+              anonymisierte, cookiefreie Kennzahlen (z. B. Seitenaufrufe, Ladezeiten) erhoben, die
+              keinen Rückschluss auf deine Person zulassen.
+            </p>
+
+            <h3 className="mt-4 font-medium text-lg">KI-Assistenz</h3>
+            <p className="text-foreground/90 leading-relaxed">
+              Sofern die KI-Assistenz verfügbar ist und du sie aktiv nutzt, werden die von dir
+              eingegebenen Texte sowie die zur Bearbeitung nötigen Szenendaten zur Verarbeitung an
+              unseren KI-Dienstleister (Anthropic) übermittelt. Ohne aktive Nutzung dieser Funktion
+              findet keine solche Übermittlung statt.
             </p>
           </section>
 
           <section className="mb-8 space-y-4">
-            <h2 className="font-semibold text-xl">10. Changes to This Policy</h2>
+            <h2 className="font-semibold text-xl">4. Zwecke und Rechtsgrundlagen</h2>
             <p className="text-foreground/90 leading-relaxed">
-              We may update this Privacy Policy from time to time. We will notify you of material
-              changes by posting the updated policy on the Platform. Your continued use of the
-              Platform after changes are posted constitutes your acceptance of the revised policy.
+              Wir verarbeiten Daten, um dir das Planungswerkzeug bereitzustellen (Art. 6 Abs. 1 lit.
+              b DSGVO) und um den technischen Betrieb sicher und stabil zu halten (berechtigtes
+              Interesse, Art. 6 Abs. 1 lit. f DSGVO). Die Nutzung der KI-Assistenz erfolgt auf Grund
+              deiner aktiven Entscheidung, sie zu verwenden.
+            </p>
+          </section>
+
+          <section className="mb-8 space-y-4">
+            <h2 className="font-semibold text-xl">5. Cookies</h2>
+            <p className="text-foreground/90 leading-relaxed">
+              Wir setzen keine Marketing- oder Tracking-Cookies ein. Technisch notwendige lokale
+              Speichermechanismen dienen ausschließlich dazu, deine Entwürfe und Einstellungen im
+              Browser zu behalten. Die optionale Reichweitenmessung (siehe oben) arbeitet ohne
+              Cookies.
+            </p>
+          </section>
+
+          <section className="mb-8 space-y-4">
+            <h2 className="font-semibold text-xl">6. Empfänger und Drittlandübermittlung</h2>
+            <p className="text-foreground/90 leading-relaxed">
+              Zur Bereitstellung des Dienstes setzen wir folgende Auftragsverarbeiter ein:
+            </p>
+            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
+              <li>
+                <strong>Vercel</strong> — Hosting und Auslieferung der Anwendung
+              </li>
+              <li>
+                <strong>Cloudflare (R2)</strong> — Auslieferung der Katalog-Assets
+              </li>
+              <li>
+                <strong>Anthropic</strong> — Verarbeitung von Eingaben, nur bei aktiver Nutzung der
+                KI-Assistenz
+              </li>
+            </ul>
+            <p className="mt-4 text-foreground/90 leading-relaxed">
+              Dabei kann es zu einer Übermittlung in Länder außerhalb der EU/des EWR (u. a. USA)
+              kommen. Diese ist durch geeignete Garantien (insbesondere EU-Standardvertragsklauseln)
+              abgesichert. Jeder dieser Dienste unterliegt seiner eigenen Datenschutzerklärung.
+            </p>
+          </section>
+
+          <section className="mb-8 space-y-4">
+            <h2 className="font-semibold text-xl">7. Speicherdauer</h2>
+            <p className="text-foreground/90 leading-relaxed">
+              Lokal gespeicherte Entwürfe verbleiben so lange auf deinem Gerät, bis du sie löschst
+              oder den Browserspeicher leerst. Server-Protokolldaten werden nur so lange aufbewahrt,
+              wie es für Betrieb und Sicherheit erforderlich ist.
+            </p>
+          </section>
+
+          <section className="mb-8 space-y-4">
+            <h2 className="font-semibold text-xl">8. Deine Rechte</h2>
+            <p className="text-foreground/90 leading-relaxed">Dir stehen folgende Rechte zu:</p>
+            <ul className="list-disc space-y-2 pl-6 text-foreground/90">
+              <li>Auskunft über die zu deiner Person verarbeiteten Daten (Art. 15 DSGVO)</li>
+              <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
+              <li>Löschung (Art. 17 DSGVO)</li>
+              <li>Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+              <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+              <li>Widerspruch gegen die Verarbeitung (Art. 21 DSGVO)</li>
+            </ul>
+            <p className="mt-4 text-foreground/90 leading-relaxed">
+              Zur Ausübung deiner Rechte genügt eine Nachricht an{' '}
+              <a
+                className="text-foreground underline hover:text-foreground/80"
+                href="mailto:info@meisterbetrieb-herrmann.de"
+              >
+                info@meisterbetrieb-herrmann.de
+              </a>
+              . Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren.
+            </p>
+          </section>
+
+          <section className="mb-8 space-y-4">
+            <h2 className="font-semibold text-xl">9. Änderungen dieser Erklärung</h2>
+            <p className="text-foreground/90 leading-relaxed">
+              Wir passen diese Datenschutzerklärung an, wenn sich die Datenverarbeitung ändert. Es
+              gilt jeweils die auf dieser Seite veröffentlichte Fassung.
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="font-semibold text-xl">11. Contact Us</h2>
+            <h2 className="font-semibold text-xl">10. Kontakt</h2>
             <p className="text-foreground/90 leading-relaxed">
-              If you have questions about this Privacy Policy or how we handle your data, please
-              contact us at{' '}
+              Bei Fragen zum Datenschutz erreichst du uns unter{' '}
               <a
                 className="text-foreground underline hover:text-foreground/80"
-                href="mailto:support@pascal.app"
+                href="mailto:info@meisterbetrieb-herrmann.de"
               >
-                support@pascal.app
+                info@meisterbetrieb-herrmann.de
               </a>
               .
             </p>
