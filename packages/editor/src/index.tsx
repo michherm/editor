@@ -282,7 +282,7 @@ export {
   getFloorplanWallThickness,
 } from './lib/floorplan'
 export { commitFreshPlacementSubtree } from './lib/fresh-planar-placement'
-export { exportSceneToGlb } from './lib/glb-export'
+export { exportSceneToGlb, nextFrames } from './lib/glb-export'
 export {
   boundaryReshapeScope,
   curveReshapeScope,

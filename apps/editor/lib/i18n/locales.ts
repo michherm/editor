@@ -44,6 +44,12 @@ export type Translation = {
     notConfigured: string
     failed: string
   }
+  handoff: {
+    backToPlixa: string
+    exporting: string
+    exportFailed: string
+    importing: string
+  }
 }
 
 const de: Translation = {
@@ -87,6 +93,12 @@ const de: Translation = {
     usingTool: 'Werkzeug: {{tool}}',
     notConfigured: 'Die KI ist noch nicht konfiguriert (kein API-Schlüssel auf dem Server).',
     failed: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.',
+  },
+  handoff: {
+    backToPlixa: 'Zurück zu Plixa',
+    exporting: 'Exportiere …',
+    exportFailed: 'Export fehlgeschlagen. Bitte erneut versuchen.',
+    importing: 'Plixa-Haus wird geladen …',
   },
 }
 
@@ -132,6 +144,12 @@ const en: Translation = {
     notConfigured: 'AI is not configured yet (no API key on the server).',
     failed: 'Something went wrong. Please try again.',
   },
+  handoff: {
+    backToPlixa: 'Back to Plixa',
+    exporting: 'Exporting …',
+    exportFailed: 'Export failed. Please try again.',
+    importing: 'Loading your Plixa house …',
+  },
 }
 
 const fr: Translation = {
@@ -175,6 +193,12 @@ const fr: Translation = {
     usingTool: 'Outil : {{tool}}',
     notConfigured: 'L\'IA n\'est pas encore configurée (pas de clé API sur le serveur).',
     failed: 'Une erreur s\'est produite. Réessaie.',
+  },
+  handoff: {
+    backToPlixa: 'Retour à Plixa',
+    exporting: 'Exportation …',
+    exportFailed: 'Échec de l\'export. Réessaie.',
+    importing: 'Chargement de votre maison Plixa …',
   },
 }
 
@@ -220,6 +244,12 @@ const pl: Translation = {
     notConfigured: 'AI nie jest jeszcze skonfigurowane (brak klucza API na serwerze).',
     failed: 'Coś poszło nie tak. Spróbuj ponownie.',
   },
+  handoff: {
+    backToPlixa: 'Powrót do Plixa',
+    exporting: 'Eksportowanie …',
+    exportFailed: 'Eksport nie powiódł się. Spróbuj ponownie.',
+    importing: 'Ładowanie domu Plixa …',
+  },
 }
 
 const it: Translation = {
@@ -263,6 +293,12 @@ const it: Translation = {
     usingTool: 'Strumento: {{tool}}',
     notConfigured: 'L\'IA non è ancora configurata (nessuna chiave API sul server).',
     failed: 'Qualcosa è andato storto. Riprova.',
+  },
+  handoff: {
+    backToPlixa: 'Torna a Plixa',
+    exporting: 'Esportazione …',
+    exportFailed: 'Esportazione non riuscita. Riprova.',
+    importing: 'Caricamento della tua casa Plixa …',
   },
 }
 
@@ -308,6 +344,12 @@ const es: Translation = {
     notConfigured: 'La IA aún no está configurada (sin clave API en el servidor).',
     failed: 'Algo salió mal. Inténtalo de nuevo.',
   },
+  handoff: {
+    backToPlixa: 'Volver a Plixa',
+    exporting: 'Exportando …',
+    exportFailed: 'La exportación falló. Inténtalo de nuevo.',
+    importing: 'Cargando tu casa Plixa …',
+  },
 }
 
 const nl: Translation = {
@@ -351,6 +393,12 @@ const nl: Translation = {
     usingTool: 'Tool: {{tool}}',
     notConfigured: 'De AI is nog niet geconfigureerd (geen API-sleutel op de server).',
     failed: 'Er ging iets mis. Probeer het opnieuw.',
+  },
+  handoff: {
+    backToPlixa: 'Terug naar Plixa',
+    exporting: 'Exporteren …',
+    exportFailed: 'Export mislukt. Probeer het opnieuw.',
+    importing: 'Je Plixa-huis wordt geladen …',
   },
 }
 
@@ -396,6 +444,12 @@ const pt: Translation = {
     notConfigured: 'A IA ainda não está configurada (sem chave API no servidor).',
     failed: 'Algo correu mal. Tenta novamente.',
   },
+  handoff: {
+    backToPlixa: 'Voltar ao Plixa',
+    exporting: 'A exportar …',
+    exportFailed: 'A exportação falhou. Tenta novamente.',
+    importing: 'A carregar a tua casa Plixa …',
+  },
 }
 
 const cs: Translation = {
@@ -439,6 +493,12 @@ const cs: Translation = {
     usingTool: 'Nástroj: {{tool}}',
     notConfigured: 'AI zatím není nakonfigurováno (na serveru chybí API klíč).',
     failed: 'Něco se pokazilo. Zkus to znovu.',
+  },
+  handoff: {
+    backToPlixa: 'Zpět do Plixa',
+    exporting: 'Exportuji …',
+    exportFailed: 'Export se nezdařil. Zkus to znovu.',
+    importing: 'Načítání tvého domu Plixa …',
   },
 }
 
@@ -484,6 +544,12 @@ const sv: Translation = {
     notConfigured: 'AI:n är inte konfigurerad än (ingen API-nyckel på servern).',
     failed: 'Något gick fel. Försök igen.',
   },
+  handoff: {
+    backToPlixa: 'Tillbaka till Plixa',
+    exporting: 'Exporterar …',
+    exportFailed: 'Exporten misslyckades. Försök igen.',
+    importing: 'Laddar ditt Plixa-hus …',
+  },
 }
 
 const da: Translation = {
@@ -528,6 +594,12 @@ const da: Translation = {
     notConfigured: 'AI\'en er ikke konfigureret endnu (ingen API-nøgle på serveren).',
     failed: 'Noget gik galt. Prøv igen.',
   },
+  handoff: {
+    backToPlixa: 'Tilbage til Plixa',
+    exporting: 'Eksporterer …',
+    exportFailed: 'Eksport mislykkedes. Prøv igen.',
+    importing: 'Indlæser dit Plixa-hus …',
+  },
 }
 
 const ro: Translation = {
@@ -571,6 +643,12 @@ const ro: Translation = {
     usingTool: 'Instrument: {{tool}}',
     notConfigured: 'IA nu este încă configurată (nicio cheie API pe server).',
     failed: 'Ceva n-a mers. Încearcă din nou.',
+  },
+  handoff: {
+    backToPlixa: 'Înapoi la Plixa',
+    exporting: 'Se exportă …',
+    exportFailed: 'Exportul a eșuat. Încearcă din nou.',
+    importing: 'Se încarcă casa ta Plixa …',
   },
 }
 
