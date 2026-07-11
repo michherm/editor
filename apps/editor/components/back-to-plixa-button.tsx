@@ -39,6 +39,13 @@ export function BackToPlixaButton() {
     setError(null)
     setBusy(true)
     try {
+      // Leere Szene früh abfangen: sonst wirft der Export mit einer kryptischen
+      // Meldung. Passiert typischerweise, wenn kein Haus geladen wurde (kein
+      // ?ifc= oder Import fehlgeschlagen).
+      if (useScene.getState().rootNodeIds.length === 0) {
+        throw new Error('empty_scene')
+      }
+
       // R3F/Instancing braucht ein paar Frames, um export-only Geometrie zu
       // committen — wie im Export-Manager: setExporting(true) → warten → export.
       useViewer.getState().setExporting(true)
@@ -49,21 +56,33 @@ export function BackToPlixaButton() {
 
       const buffer = await exportSceneToGlb(sceneGroup, useScene.getState().nodes)
       useViewer.getState().setExporting(false)
+      console.info(`[plixa handoff] GLB exportiert: ${(buffer.byteLength / 1024 / 1024).toFixed(2)} MB`)
 
       const res = await fetch('/api/handoff-result', {
         method: 'POST',
         headers: { 'content-type': 'model/gltf-binary' },
         body: buffer,
       })
-      const data = (await res.json()) as { url?: string; error?: string }
+      // Bei Fehler kann die Antwort statt JSON eine Plattform-Fehlerseite sein
+      // (z. B. Vercels 413, wenn die GLB die 4,5-MB-Body-Grenze der Serverless-
+      // Funktion überschreitet). Robust lesen und den Status protokollieren.
+      const raw = await res.text()
+      let data: { url?: string; error?: string } = {}
+      try {
+        data = JSON.parse(raw)
+      } catch {
+        /* nicht-JSON (Plattform-Fehlerseite) */
+      }
       if (!res.ok || !data.url) {
-        throw new Error(data.error ?? `upload ${res.status}`)
+        throw new Error(data.error ?? `upload_http_${res.status}: ${raw.slice(0, 200)}`)
       }
 
       window.location.href = `${PLIXA_KONFIGURATOR_URL}?result=${encodeURIComponent(data.url)}`
     } catch (err) {
       useViewer.getState().setExporting(false)
-      setError(err instanceof Error ? err.message : String(err))
+      console.error('[plixa handoff] Rückweg fehlgeschlagen:', err)
+      const message = err instanceof Error ? err.message : String(err)
+      setError(message === 'empty_scene' ? t('handoff.emptyScene') : t('handoff.exportFailed'))
       setBusy(false)
     }
   }
@@ -86,7 +105,7 @@ export function BackToPlixaButton() {
       </button>
       {error && (
         <span className="mt-1 max-w-56 rounded-md bg-[#fdeceb] px-2 py-1 text-[#b23b34] text-xs">
-          {t('handoff.exportFailed')}
+          {error}
         </span>
       )}
     </div>

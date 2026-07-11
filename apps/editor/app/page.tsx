@@ -104,18 +104,27 @@ export default function Home() {
   const [importProgress, setImportProgress] = useState<{ message: string; percent: number } | null>(
     null,
   )
+  const [importError, setImportError] = useState<string | null>(null)
   const onLoad = useMemo(
     () =>
       ifcUrl
-        ? createIfcOnLoad(ifcUrl, (message, percent) => setImportProgress({ message, percent }))
+        ? createIfcOnLoad(
+            ifcUrl,
+            (message, percent) => setImportProgress({ message, percent }),
+            (message) => setImportError(message),
+          )
         : undefined,
     [ifcUrl],
   )
 
   return (
     <div className="relative h-screen w-screen">
-      {ifcUrl && importProgress && importProgress.percent < 100 && (
-        <IfcImportOverlay message={importProgress.message} percent={importProgress.percent} />
+      {ifcUrl && (importError || (importProgress && importProgress.percent < 100)) && (
+        <IfcImportOverlay
+          message={importProgress?.message ?? ''}
+          percent={importProgress?.percent ?? 0}
+          error={importError}
+        />
       )}
       {PROJECT_ID === 'local-editor' && (
         <div className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2">

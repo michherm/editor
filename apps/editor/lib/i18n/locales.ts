@@ -48,7 +48,9 @@ export type Translation = {
     backToPlixa: string
     exporting: string
     exportFailed: string
+    emptyScene: string
     importing: string
+    importFailed: string
   }
 }
 
@@ -98,7 +100,9 @@ const de: Translation = {
     backToPlixa: 'Zurück zu Plixa',
     exporting: 'Exportiere …',
     exportFailed: 'Export fehlgeschlagen. Bitte erneut versuchen.',
+    emptyScene: 'Keine Szene zum Exportieren — wurde das Haus geladen?',
     importing: 'Plixa-Haus wird geladen …',
+    importFailed: 'Haus konnte nicht geladen werden',
   },
 }
 
@@ -148,7 +152,9 @@ const en: Translation = {
     backToPlixa: 'Back to Plixa',
     exporting: 'Exporting …',
     exportFailed: 'Export failed. Please try again.',
+    emptyScene: 'No scene to export — was the house loaded?',
     importing: 'Loading your Plixa house …',
+    importFailed: 'Could not load the house',
   },
 }
 
@@ -198,7 +204,9 @@ const fr: Translation = {
     backToPlixa: 'Retour à Plixa',
     exporting: 'Exportation …',
     exportFailed: 'Échec de l\'export. Réessaie.',
+    emptyScene: 'Aucune scène à exporter — la maison a-t-elle été chargée ?',
     importing: 'Chargement de votre maison Plixa …',
+    importFailed: 'Impossible de charger la maison',
   },
 }
 
@@ -248,7 +256,9 @@ const pl: Translation = {
     backToPlixa: 'Powrót do Plixa',
     exporting: 'Eksportowanie …',
     exportFailed: 'Eksport nie powiódł się. Spróbuj ponownie.',
+    emptyScene: 'Brak sceny do eksportu — czy dom został wczytany?',
     importing: 'Ładowanie domu Plixa …',
+    importFailed: 'Nie można wczytać domu',
   },
 }
 
@@ -298,7 +308,9 @@ const it: Translation = {
     backToPlixa: 'Torna a Plixa',
     exporting: 'Esportazione …',
     exportFailed: 'Esportazione non riuscita. Riprova.',
+    emptyScene: 'Nessuna scena da esportare — la casa è stata caricata?',
     importing: 'Caricamento della tua casa Plixa …',
+    importFailed: 'Impossibile caricare la casa',
   },
 }
 
@@ -348,7 +360,9 @@ const es: Translation = {
     backToPlixa: 'Volver a Plixa',
     exporting: 'Exportando …',
     exportFailed: 'La exportación falló. Inténtalo de nuevo.',
+    emptyScene: 'No hay escena para exportar — ¿se cargó la casa?',
     importing: 'Cargando tu casa Plixa …',
+    importFailed: 'No se pudo cargar la casa',
   },
 }
 
@@ -398,7 +412,9 @@ const nl: Translation = {
     backToPlixa: 'Terug naar Plixa',
     exporting: 'Exporteren …',
     exportFailed: 'Export mislukt. Probeer het opnieuw.',
+    emptyScene: 'Geen scène om te exporteren — is het huis geladen?',
     importing: 'Je Plixa-huis wordt geladen …',
+    importFailed: 'Huis kon niet worden geladen',
   },
 }
 
@@ -448,7 +464,9 @@ const pt: Translation = {
     backToPlixa: 'Voltar ao Plixa',
     exporting: 'A exportar …',
     exportFailed: 'A exportação falhou. Tenta novamente.',
+    emptyScene: 'Nenhuma cena para exportar — a casa foi carregada?',
     importing: 'A carregar a tua casa Plixa …',
+    importFailed: 'Não foi possível carregar a casa',
   },
 }
 
@@ -498,7 +516,9 @@ const cs: Translation = {
     backToPlixa: 'Zpět do Plixa',
     exporting: 'Exportuji …',
     exportFailed: 'Export se nezdařil. Zkus to znovu.',
+    emptyScene: 'Žádná scéna k exportu — načetl se dům?',
     importing: 'Načítání tvého domu Plixa …',
+    importFailed: 'Dům se nepodařilo načíst',
   },
 }
 
@@ -548,7 +568,9 @@ const sv: Translation = {
     backToPlixa: 'Tillbaka till Plixa',
     exporting: 'Exporterar …',
     exportFailed: 'Exporten misslyckades. Försök igen.',
+    emptyScene: 'Ingen scen att exportera — laddades huset?',
     importing: 'Laddar ditt Plixa-hus …',
+    importFailed: 'Huset kunde inte laddas',
   },
 }
 
@@ -598,7 +620,9 @@ const da: Translation = {
     backToPlixa: 'Tilbage til Plixa',
     exporting: 'Eksporterer …',
     exportFailed: 'Eksport mislykkedes. Prøv igen.',
+    emptyScene: 'Ingen scene at eksportere — blev huset indlæst?',
     importing: 'Indlæser dit Plixa-hus …',
+    importFailed: 'Huset kunne ikke indlæses',
   },
 }
 
@@ -648,7 +672,9 @@ const ro: Translation = {
     backToPlixa: 'Înapoi la Plixa',
     exporting: 'Se exportă …',
     exportFailed: 'Exportul a eșuat. Încearcă din nou.',
+    emptyScene: 'Nicio scenă de exportat — s-a încărcat casa?',
     importing: 'Se încarcă casa ta Plixa …',
+    importFailed: 'Casa nu a putut fi încărcată',
   },
 }
 
