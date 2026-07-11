@@ -1210,11 +1210,10 @@ export default function Editor({
     }
   }, [isVersionPreviewMode])
 
+  // Plixa-Fork: heller „cozy white"-Look (kein erzwungener Dark-Mode). Die
+  // dunkle Kopfleiste kommt gezielt über den Plixa-Header, nicht global.
   useEffect(() => {
-    document.body.classList.add('dark')
-    return () => {
-      document.body.classList.remove('dark')
-    }
+    document.body.classList.remove('dark')
   }, [])
 
   const handleSceneReadyChange = useCallback((ready: boolean) => {
@@ -1366,7 +1365,7 @@ export default function Editor({
         )}
 
         {!isLoading && isPreviewMode ? (
-          <div className="dark flex h-full w-full flex-col bg-neutral-100 text-foreground">
+          <div className="flex h-full w-full flex-col bg-background text-foreground">
             {isFirstPersonMode ? (
               <FirstPersonOverlay onExit={() => useEditor.getState().setFirstPersonMode(false)} />
             ) : (
@@ -1430,7 +1429,7 @@ export default function Editor({
   const overlayLeft = LAYOUT_PADDING + (isSidebarCollapsed ? 8 : sidebarWidth) + LAYOUT_GAP
 
   return (
-    <div className="dark flex h-full w-full gap-3 bg-neutral-100 p-3 text-foreground">
+    <div className="flex h-full w-full gap-3 bg-background p-3 text-foreground">
       {showLoader && (
         <div className="fixed inset-0 z-60">
           <SceneLoader className="bg-background" />

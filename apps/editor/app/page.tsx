@@ -6,10 +6,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BackToPlixaButton } from '@/components/back-to-plixa-button'
-import { PlixaHeader } from '@/components/plixa-header'
+import { PlixaNavbar } from '@/components/plixa-navbar'
 import { BuildTab } from '@/components/build-tab'
 import { IfcImportOverlay } from '@/components/ifc-import-overlay'
+import { uploadLocalScan } from '@/lib/local-scan-upload'
 import {
   CommunityViewerToolbarLeft,
   CommunityViewerToolbarRight,
@@ -127,7 +127,7 @@ export default function Home() {
         />
       )}
       {PROJECT_ID === 'local-editor' && (
-        <div className="pointer-events-none absolute top-3 left-1/2 z-40 -translate-x-1/2">
+        <div className="pointer-events-none absolute top-16 left-1/2 z-40 -translate-x-1/2">
           <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-border/60 bg-background/90 px-4 py-1.5 text-xs shadow-sm backdrop-blur">
             <span className="text-muted-foreground">{t('app.localScenes')}</span>
             <Link className="font-medium text-foreground hover:underline" href="/scenes">
@@ -150,14 +150,16 @@ export default function Home() {
           if (!visible) setImportProgress(null)
         }}
         sidebarTabs={sidebarTabs}
-        sidebarTop={<PlixaHeader />}
+        navbarSlot={<PlixaNavbar />}
+        sitePanelProps={{
+          // Eigene 3D-Modelle (.glb/.gltf) lokal laden — freies Programm, kein
+          // Backend nötig. Bilder (Grundriss/Scan) laufen bereits lokal.
+          onUploadAsset: (_projectId, levelId, file, type) => {
+            if (type === 'scan') void uploadLocalScan(file, levelId)
+          },
+        }}
         viewerToolbarLeft={<CommunityViewerToolbarLeft />}
-        viewerToolbarRight={
-          <>
-            <BackToPlixaButton />
-            <CommunityViewerToolbarRight />
-          </>
-        }
+        viewerToolbarRight={<CommunityViewerToolbarRight />}
       />
     </div>
   )

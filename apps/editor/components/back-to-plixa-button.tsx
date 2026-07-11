@@ -88,23 +88,31 @@ export function BackToPlixaButton() {
   }
 
   return (
-    <div className="inline-flex flex-col items-end">
+    <div className="relative inline-flex flex-col items-end">
       <button
         type="button"
         onClick={() => void handleClick()}
         disabled={busy}
-        className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border bg-background/90 px-3 font-medium text-xs shadow-2xl backdrop-blur-md transition-colors hover:bg-white/8 disabled:opacity-60"
-        style={{ color: '#d39440' }}
+        className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 font-semibold text-[13px] text-[#18120a] shadow-sm ring-1 ring-black/10 transition hover:brightness-105 disabled:opacity-70"
+        style={{ background: 'linear-gradient(180deg, #e3b14e, #d39440)' }}
       >
         {busy ? (
-          <span className="pascal-loader-2" style={{ width: 14, height: 14, color: '#d39440' }} />
+          <span className="pascal-loader-2" style={{ width: 14, height: 14, color: '#18120a' }} />
         ) : (
-          <span aria-hidden>←</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M13 5l-7 7 7 7M6 12h13"
+              stroke="#18120a"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         )}
         <span>{busy ? t('handoff.exporting') : t('handoff.backToPlixa')}</span>
       </button>
       {error && (
-        <span className="mt-1 max-w-56 rounded-md bg-[#fdeceb] px-2 py-1 text-[#b23b34] text-xs">
+        <span className="absolute top-9 right-0 z-10 max-w-64 rounded-md bg-[#fdeceb] px-2 py-1 text-[#b23b34] text-xs shadow-md">
           {error}
         </span>
       )}
