@@ -1,0 +1,22 @@
+{
+  "name": "@plixa/ai",
+  "version": "0.1.0",
+  "description": "Plixa AI assistant panel for the Pascal editor — natural-language scene editing via Claude + Pascal's MCP tools.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.ts", "default": "./src/index.ts" }
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@pascal-app/core": "*",
+    "@pascal-app/mcp": "*",
+    "react": "^18 || ^19",
+    "react-i18next": "^15"
+  },
+  "devDependencies": {
+    "@pascal/typescript-config": "*"
+  },
+  "license": "MIT"
+}
