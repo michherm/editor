@@ -219,11 +219,14 @@ export function EditorLayoutMobile({
         <div className="absolute inset-x-0 top-0 overflow-hidden" style={{ height: viewerHeight }}>
           <div className="relative h-full w-full">
             {(viewerToolbarLeft || viewerToolbarRight) && !isCaptureMode && (
-              <div className="pointer-events-none absolute top-3 right-3 left-3 z-20 flex items-center justify-between gap-2">
-                <div className="pointer-events-auto flex items-center gap-2">
+              // Auf schmalen Handys passen beide Toolbars nicht nebeneinander →
+              // horizontal scrollbar statt am Rand abschneiden. Auf breiteren
+              // Geräten stehen sie wie gehabt an den Rändern (justify-between).
+              <div className="no-scrollbar pointer-events-none absolute top-3 right-3 left-3 z-20 flex items-center gap-2 overflow-x-auto sm:justify-between">
+                <div className="pointer-events-auto flex shrink-0 items-center gap-2">
                   {viewerToolbarLeft}
                 </div>
-                <div className="pointer-events-auto flex items-center gap-2">
+                <div className="pointer-events-auto flex shrink-0 items-center gap-2">
                   {viewerToolbarRight}
                 </div>
               </div>

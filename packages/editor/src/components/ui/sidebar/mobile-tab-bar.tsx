@@ -12,7 +12,7 @@ interface MobileTabBarProps {
 export function MobileTabBar({ tabs, activeTab, onTabPress }: MobileTabBarProps) {
   return (
     <div
-      className="z-50 flex h-14 shrink-0 border-border/50 border-t bg-sidebar text-sidebar-foreground"
+      className="no-scrollbar z-50 flex h-14 shrink-0 overflow-x-auto border-border/50 border-t bg-sidebar text-sidebar-foreground"
       style={{
         // Cap the safe-area inset — iOS Chrome can report its bottom UI bar
         // (50–100px) as part of the safe area which would balloon the tab bar.
@@ -25,7 +25,7 @@ export function MobileTabBar({ tabs, activeTab, onTabPress }: MobileTabBarProps)
         return (
           <button
             className={cn(
-              'flex flex-1 flex-col items-center justify-center gap-0.5 text-xs transition-colors',
+              'flex min-w-[68px] flex-1 shrink-0 flex-col items-center justify-center gap-0.5 px-1 text-[11px] transition-colors',
               isActive ? 'text-foreground' : 'text-muted-foreground',
             )}
             key={tab.id}
@@ -37,7 +37,7 @@ export function MobileTabBar({ tabs, activeTab, onTabPress }: MobileTabBarProps)
                 {tab.mobileIcon}
               </span>
             ) : null}
-            <span className="font-medium">{tab.label}</span>
+            <span className="max-w-full truncate font-medium">{tab.label}</span>
           </button>
         )
       })}

@@ -4,11 +4,6 @@ import type { SceneGraph } from '@pascal-app/editor'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 
-const EMPTY_GRAPH: SceneGraph = {
-  nodes: {},
-  rootNodeIds: [],
-}
-
 interface SaveButtonProps {
   sceneId: string
   name: string
@@ -17,47 +12,23 @@ interface SaveButtonProps {
 }
 
 /**
- * Creates a new empty scene and navigates the user to it.
+ * Öffnet den (lokalen) Editor.
+ *
+ * Plixa-Fork: Der Editor läuft lokal im Browser (localStorage), es gibt keinen
+ * Szenen-Server. Früher legte dieser Knopf eine Server-Szene über `/api/scenes`
+ * an — ohne Datenbank schlug das mit „Failed to create scene (503)" fehl.
+ * Jetzt führt er direkt in den lokalen Editor.
  */
 export function CreateSceneButton({ label = 'Create new scene' }: { label?: string } = {}) {
   const router = useRouter()
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const handleCreate = useCallback(async () => {
-    setIsCreating(true)
-    setError(null)
-    try {
-      const response = await fetch('/api/scenes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Untitled scene', graph: EMPTY_GRAPH }),
-      })
-      if (!response.ok) {
-        setError(`Failed to create scene (${response.status})`)
-        return
-      }
-      const meta = (await response.json()) as { id: string }
-      router.push(`/scene/${meta.id}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create scene')
-    } finally {
-      setIsCreating(false)
-    }
-  }, [router])
-
   return (
-    <div className="flex items-center gap-3">
-      {error && <span className="text-destructive text-xs">{error}</span>}
-      <button
-        className="rounded-md border border-border bg-accent px-3 py-1.5 font-medium text-sm hover:bg-accent/80 disabled:opacity-50"
-        disabled={isCreating}
-        onClick={handleCreate}
-        type="button"
-      >
-        {isCreating ? 'Creating…' : label}
-      </button>
-    </div>
+    <button
+      className="rounded-md border border-border bg-accent px-3 py-1.5 font-medium text-sm hover:bg-accent/80"
+      onClick={() => router.push('/')}
+      type="button"
+    >
+      {label}
+    </button>
   )
 }
 
