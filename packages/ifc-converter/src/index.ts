@@ -1652,25 +1652,72 @@ export async function convertIfcToPascal(
   //
   // Pascal has no "arbitrary tilted plate" node — its roof is PARAMETRIC
   // (RoofNode → RoofSegmentNode with a shape + pitch). Plixa's IFC ships the
-  // roof as many small tilted IfcRoof plates (e.g. Skylark's `..._ROOF_M42`
-  // modules); mapping each to its own node produced empty RoofNodes that
-  // rendered nothing (the "Dach fehlt" bug). Instead we reconstruct ONE gable
-  // roof from the collective footprint + pitch and seat it on the top storey's
-  // walls. The pitch comes from the module tag (`M42` → 42°); the footprint and
-  // eave height come from the already-built walls/levels (clean node space, no
-  // placement-axis maths needed).
+  // roof as tilted IfcRoof plates (2 planes for a saddle roof, or many small
+  // Skylark `..._ROOF_M42` modules); mapping each to its own node produced empty
+  // RoofNodes that rendered nothing (the "Dach fehlt" bug). Instead we
+  // reconstruct ONE gable roof and seat it on the top storey's walls. The PITCH
+  // comes from the plates' real 3D slope — the tilt lives in the IfcRoof
+  // ObjectPlacement axis, NOT in the (locally flat) profile — so we transform
+  // each profile with its full placement and read rise/run. Footprint and eave
+  // height come from the already-built walls/levels (clean node space).
   const roofIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCROOF)
   if (roofIds.size() > 0) {
-    // Pitch from any roof module's name/predefined type ("...M42" → 42°).
+    // Pitch from the ACTUAL tilted-plate geometry (median of the sloped plates),
+    // honouring the placement axis. Falls back to the module tag, then 42°.
     let pitchDeg = 42
+    const platePitches: number[] = []
     for (let i = 0; i < roofIds.size(); i++) {
       const roof = ifcApi.GetLine(modelID, roofIds.get(i))
-      const label = String(roof.Name?.value ?? roof.PredefinedType?.value ?? '')
-      const m = label.match(/M\s*(\d{2})/i) ?? label.match(/(\d{2})\s*°/)
-      const deg = m ? Number(m[1]) : Number.NaN
-      if (Number.isFinite(deg) && deg > 5 && deg < 80) {
-        pitchDeg = deg
-        break
+      try {
+        const worldMat = roof.ObjectPlacement?.value
+          ? resolveWorldTransform(ifcApi, modelID, roof.ObjectPlacement.value)
+          : identity()
+        const body = getBodyExtrusionData(ifcApi, modelID, roof)
+        const extrusionMat = getExtrusionPosition(ifcApi, modelID, roof)
+        const combined = extrusionMat ? multiply(worldMat, extrusionMat) : worldMat
+        const pts =
+          body.profilePoints && body.profilePoints.length >= 3
+            ? body.profilePoints
+            : body.xDim && body.yDim
+              ? [
+                  [-body.xDim / 2, -body.yDim / 2],
+                  [body.xDim / 2, -body.yDim / 2],
+                  [body.xDim / 2, body.yDim / 2],
+                  [-body.xDim / 2, body.yDim / 2],
+                ]
+              : []
+        if (pts.length < 3) continue
+        // scene coords: [ground0, ground1, elevation]
+        const scPts = pts.map((pt) => worldToScene(transformPoint3(combined, [pt[0], pt[1], 0])))
+        let loI = 0
+        let hiI = 0
+        for (let k = 1; k < scPts.length; k++) {
+          if (scPts[k]![2]! < scPts[loI]![2]!) loI = k
+          if (scPts[k]![2]! > scPts[hiI]![2]!) hiI = k
+        }
+        const rise = scPts[hiI]![2]! - scPts[loI]![2]!
+        const run = Math.hypot(scPts[hiI]![0]! - scPts[loI]![0]!, scPts[hiI]![1]! - scPts[loI]![1]!)
+        if (rise > 0.05 && run > 0.05) {
+          const deg = (Math.atan2(rise, run) * 180) / Math.PI
+          if (deg > 5 && deg < 70) platePitches.push(deg)
+        }
+      } catch {
+        /* skip this plate */
+      }
+    }
+    if (platePitches.length > 0) {
+      platePitches.sort((a, b) => a - b)
+      pitchDeg = platePitches[Math.floor(platePitches.length / 2)]!
+    } else {
+      for (let i = 0; i < roofIds.size(); i++) {
+        const roof = ifcApi.GetLine(modelID, roofIds.get(i))
+        const label = String(roof.Name?.value ?? roof.PredefinedType?.value ?? '')
+        const m = label.match(/M\s*(\d{2})/i) ?? label.match(/(\d{2})\s*°/)
+        const deg = m ? Number(m[1]) : Number.NaN
+        if (Number.isFinite(deg) && deg > 5 && deg < 80) {
+          pitchDeg = deg
+          break
+        }
       }
     }
 
