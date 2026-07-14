@@ -578,6 +578,86 @@ function measureWallLocalExtents(
   }
 }
 
+// Read an IfcRoof plate's world axis-aligned box from the tessellated mesh.
+// Plixa's forEditor export ships each roof panel as an AXIS-ALIGNED box (the
+// real slope is baked out of the per-panel geometry), so face normals are all
+// horizontal/vertical and useless — but the boxes' sizes and arrangement still
+// encode the roof: a tilted panel has a tall vertical extent, panels arranged
+// in one run = mono-pitch (shed), in two opposing runs = gable, flat panels =
+// flat. web-ifc's mesh frame is Y-up with the ground on X/Z (unlike the
+// converter's Z-up scene), so we return the box in that frame; the caller maps
+// the slope axis to scene directions (sc0 ∝ meshX, sc1 ∝ -meshZ, elevation ∝
+// meshY). Returns null when the plate has no readable geometry.
+function getRoofModuleBox(
+  ifcApi: WebIFC.IfcAPI,
+  modelID: number,
+  expressID: number,
+): { cx: number; cz: number; cy: number; dx: number; dz: number; height: number } | null {
+  let mesh: { geometries: { size: () => number; get: (i: number) => unknown }; delete?: () => void }
+  try {
+    mesh = ifcApi.GetFlatMesh(modelID, expressID) as never
+  } catch {
+    return null
+  }
+  try {
+    const geoms = mesh.geometries
+    let mnx = Infinity
+    let mxx = -Infinity
+    let mny = Infinity
+    let mxy = -Infinity
+    let mnz = Infinity
+    let mxz = -Infinity
+    let any = false
+    for (let g = 0; g < geoms.size(); g++) {
+      const pg = geoms.get(g) as { flatTransformation: number[]; geometryExpressID: number }
+      const m = pg.flatTransformation
+      const geo = ifcApi.GetGeometry(modelID, pg.geometryExpressID)
+      try {
+        const verts = ifcApi.GetVertexArray(geo.GetVertexData(), geo.GetVertexDataSize())
+        // 6 floats/vertex: local pos xyz + normal xyz. flatTransformation is
+        // column-major 4x4 → mesh-world position.
+        for (let v = 0; v + 2 < verts.length; v += 6) {
+          const x = verts[v]!
+          const y = verts[v + 1]!
+          const z = verts[v + 2]!
+          const wx = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!
+          const wy = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!
+          const wz = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!
+          if (wx < mnx) mnx = wx
+          if (wx > mxx) mxx = wx
+          if (wy < mny) mny = wy
+          if (wy > mxy) mxy = wy
+          if (wz < mnz) mnz = wz
+          if (wz > mxz) mxz = wz
+          any = true
+        }
+      } finally {
+        ;(geo as unknown as { delete?: () => void }).delete?.()
+      }
+    }
+    if (!any) return null
+    return {
+      cx: (mnx + mxx) / 2,
+      cz: (mnz + mxz) / 2,
+      cy: (mny + mxy) / 2,
+      dx: mxx - mnx,
+      dz: mxz - mnz,
+      height: mxy - mny,
+    }
+  } catch {
+    return null
+  } finally {
+    mesh.delete?.()
+  }
+}
+
+// Median of a numeric list (0 for empty).
+function median(values: number[]): number {
+  if (values.length === 0) return 0
+  const s = [...values].sort((a, b) => a - b)
+  return s[Math.floor(s.length / 2)]!
+}
+
 // Resolve wall height + thickness from the wall-frame extents. The along
 // extent must match the wall's already-known length (within tolerance)
 // for the measurement to be trusted — that gate confirms both the unit
@@ -1652,74 +1732,116 @@ export async function convertIfcToPascal(
   //
   // Pascal has no "arbitrary tilted plate" node — its roof is PARAMETRIC
   // (RoofNode → RoofSegmentNode with a shape + pitch). Plixa's IFC ships the
-  // roof as tilted IfcRoof plates (2 planes for a saddle roof, or many small
-  // Skylark `..._ROOF_M42` modules); mapping each to its own node produced empty
+  // roof as tilted IfcRoof plates (2 planes for a saddle roof, one for a
+  // mono-pitch, none for flat); mapping each to its own node produced empty
   // RoofNodes that rendered nothing (the "Dach fehlt" bug). Instead we
-  // reconstruct ONE gable roof and seat it on the top storey's walls. The PITCH
-  // comes from the plates' real 3D slope — the tilt lives in the IfcRoof
-  // ObjectPlacement axis, NOT in the (locally flat) profile — so we transform
-  // each profile with its full placement and read rise/run. Footprint and eave
-  // height come from the already-built walls/levels (clean node space).
+  // reconstruct ONE parametric roof and seat it on the top storey's walls. The
+  // TYPE, pitch, and direction come from the plates' real 3D slope, read from
+  // the tessellated mesh (the tilt lives in the IfcRoof geometry, which is often
+  // Brep/mapped and unreadable as a flat extrusion). Footprint and eave height
+  // come from the already-built walls/levels (clean node space).
   const roofIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCROOF)
   if (roofIds.size() > 0) {
-    // Pitch from the ACTUAL tilted-plate geometry (median of the sloped plates),
-    // honouring the placement axis. Falls back to the module tag, then 42°.
-    let pitchDeg = 42
-    const platePitches: number[] = []
+    // Read every roof plate's world box (mesh frame: Y up, ground on X/Z).
+    const modules = [] as {
+      cx: number
+      cz: number
+      cy: number
+      dx: number
+      dz: number
+      height: number
+    }[]
     for (let i = 0; i < roofIds.size(); i++) {
-      const roof = ifcApi.GetLine(modelID, roofIds.get(i))
-      try {
-        const worldMat = roof.ObjectPlacement?.value
-          ? resolveWorldTransform(ifcApi, modelID, roof.ObjectPlacement.value)
-          : identity()
-        const body = getBodyExtrusionData(ifcApi, modelID, roof)
-        const extrusionMat = getExtrusionPosition(ifcApi, modelID, roof)
-        const combined = extrusionMat ? multiply(worldMat, extrusionMat) : worldMat
-        const pts =
-          body.profilePoints && body.profilePoints.length >= 3
-            ? body.profilePoints
-            : body.xDim && body.yDim
-              ? [
-                  [-body.xDim / 2, -body.yDim / 2],
-                  [body.xDim / 2, -body.yDim / 2],
-                  [body.xDim / 2, body.yDim / 2],
-                  [-body.xDim / 2, body.yDim / 2],
-                ]
-              : []
-        if (pts.length < 3) continue
-        // scene coords: [ground0, ground1, elevation]
-        const scPts = pts.map((pt) => worldToScene(transformPoint3(combined, [pt[0], pt[1], 0])))
-        let loI = 0
-        let hiI = 0
-        for (let k = 1; k < scPts.length; k++) {
-          if (scPts[k]![2]! < scPts[loI]![2]!) loI = k
-          if (scPts[k]![2]! > scPts[hiI]![2]!) hiI = k
-        }
-        const rise = scPts[hiI]![2]! - scPts[loI]![2]!
-        const run = Math.hypot(scPts[hiI]![0]! - scPts[loI]![0]!, scPts[hiI]![1]! - scPts[loI]![1]!)
-        if (rise > 0.05 && run > 0.05) {
-          const deg = (Math.atan2(rise, run) * 180) / Math.PI
-          if (deg > 5 && deg < 70) platePitches.push(deg)
-        }
-      } catch {
-        /* skip this plate */
+      const box = getRoofModuleBox(ifcApi, modelID, roofIds.get(i))
+      if (box) modules.push(box)
+    }
+
+    // Separate the big roof panels from the thin verge/eave trims by ground
+    // footprint — the panels carry the slope; the trims only garnish the edges.
+    const maxFoot = modules.reduce((m, b) => Math.max(m, b.dx * b.dz), 0)
+    const mains = modules.filter((b) => b.dx * b.dz >= 0.5 * maxFoot)
+
+    // Slope run axis = the ground axis a panel spans furthest along; the ridge
+    // (for a gable) runs perpendicular, along the side-by-side direction.
+    const runAlongZ = median(mains.map((b) => b.dz)) >= median(mains.map((b) => b.dx))
+    const runOf = (b: (typeof modules)[number]) => (runAlongZ ? b.cz : b.cx)
+    const runLen = runAlongZ ? median(mains.map((b) => b.dz)) : median(mains.map((b) => b.dx))
+
+    // A panel is tilted when its vertical extent exceeds a flat slab's thickness
+    // (a flat roof panel is ~0.3–0.5 m thick; a pitched one rises well beyond).
+    const FLAT_PANEL_THICKNESS = 0.6
+    const tilted = mains.filter((b) => b.height > FLAT_PANEL_THICKNESS)
+
+    // Count the distinct runs of tilted panels along the slope axis. One run =
+    // mono-pitch (shed / Pultdach); two opposing runs meeting at a ridge = gable
+    // (Satteldach); no tilted panels = flat (Flachdach). This is exactly the
+    // user's rule: one sloped face → Pultdach, two opposing → Satteldach.
+    let runClusters = 0
+    if (tilted.length > 0) {
+      const centers = tilted.map(runOf).sort((a, b) => a - b)
+      const tol = Math.max(0.5, 0.5 * runLen)
+      runClusters = 1
+      for (let i = 1; i < centers.length; i++) {
+        if (centers[i]! - centers[i - 1]! > tol) runClusters++
       }
     }
-    if (platePitches.length > 0) {
-      platePitches.sort((a, b) => a - b)
-      pitchDeg = platePitches[Math.floor(platePitches.length / 2)]!
-    } else {
+    const roofKind: 'flat' | 'shed' | 'gable' =
+      tilted.length === 0 ? 'flat' : runClusters <= 1 ? 'shed' : 'gable'
+
+    // Pitch: the Skylark module name carries it (…_ROOF_M42 = 42°, _M10 = 10°);
+    // trust that first, then fall back to estimating it from the tilted panel's
+    // rise over its run, then a sane default. Flat roofs are 0°.
+    let pitchDeg = 0
+    if (roofKind !== 'flat') {
       for (let i = 0; i < roofIds.size(); i++) {
-        const roof = ifcApi.GetLine(modelID, roofIds.get(i))
-        const label = String(roof.Name?.value ?? roof.PredefinedType?.value ?? '')
-        const m = label.match(/M\s*(\d{2})/i) ?? label.match(/(\d{2})\s*°/)
+        const label = String(ifcApi.GetLine(modelID, roofIds.get(i)).Name?.value ?? '')
+        const m = label.match(/M\s*0*(\d{1,2})(?!\d)/i) ?? label.match(/(\d{1,2})\s*°/)
         const deg = m ? Number(m[1]) : Number.NaN
-        if (Number.isFinite(deg) && deg > 5 && deg < 80) {
+        if (Number.isFinite(deg) && deg >= 3 && deg <= 80) {
           pitchDeg = deg
           break
         }
       }
+      if (pitchDeg === 0 && tilted.length > 0) {
+        // rise ≈ panel vertical extent minus slab thickness; run = one slope's
+        // span (a gable panel spans half the roof, a shed the whole run).
+        const rise = Math.max(0.05, median(tilted.map((b) => b.height)) - 0.3)
+        const est = (Math.atan2(rise, Math.max(0.5, runLen)) * 180) / Math.PI
+        pitchDeg = Math.min(80, Math.max(5, est))
+      }
     }
+
+    // Slope direction in the mesh ground plane. For a shed the roof descends
+    // along the run axis — recover which way from the height field: fit the panel
+    // + trim centroids' height against run position; downhill = decreasing
+    // height. For a gable the two slopes cancel (flat fit) so we just use the run
+    // axis (its sign is irrelevant for the symmetric shape).
+    let n = 0
+    let sr = 0
+    let sh = 0
+    let srr = 0
+    let srh = 0
+    for (const b of modules) {
+      const r = runOf(b)
+      n++
+      sr += r
+      sh += b.cy
+      srr += r * r
+      srh += r * b.cy
+    }
+    const denom = n * srr - sr * sr
+    const grad = Math.abs(denom) > 1e-6 ? (n * srh - sr * sh) / denom : 0
+    // Downhill unit vector along the run axis in mesh ground (0 across it).
+    const runSign = roofKind === 'shed' ? (grad >= 0 ? -1 : 1) : 1
+    const meshDownX = runAlongZ ? 0 : runSign
+    const meshDownZ = runAlongZ ? runSign : 0
+    // Map mesh ground → scene ground direction: sc0 ∝ meshX, sc1 ∝ -meshZ.
+    const primDx = meshDownX
+    const primDy = -meshDownZ
+
+    console.log(
+      `[IFC→Pascal] Roof: kind=${roofKind} runs=${runClusters} tiltedPanels=${tilted.length}/${mains.length} pitch=${pitchDeg.toFixed(0)}°`,
+    )
 
     // Footprint + eave height from the reconstructed walls/levels.
     const wallNodes = Object.values(nodes).filter((n) => n.type === 'wall') as WallNode[]
@@ -1764,12 +1886,25 @@ export async function convertIfcToPascal(
         : DEFAULT_WALL_HEIGHT
       const eaveY = topElev + topWallHeight
 
-      // Gable ridge runs along `width`; the roof slopes across `depth`. Put the
-      // ridge along the longer footprint axis (the common gable orientation).
-      const ridgeAlongX = spanX >= spanZ
-      const width = ridgeAlongX ? spanX : spanZ
-      const depth = ridgeAlongX ? spanZ : spanX
-      const rotation = ridgeAlongX ? 0 : Math.PI / 2
+      // The segment slopes across its local Z (`depth`); at rotation 0 that's the
+      // scene ground axis 1. Orient so the slope axis follows the measured
+      // downhill: a shed descends along it, a gable's ridge runs perpendicular to
+      // it (symmetric, so the sign doesn't matter), a flat roof any orientation.
+      // `rotation` (Y) turns local Z onto the slope axis; a shed also flips 180°
+      // so the low eave lands on the correct side.
+      const slopeX = roofKind === 'flat' ? 0 : primDx
+      const slopeY = roofKind === 'flat' ? 1 : primDy
+      const slopeAlongX = Math.abs(slopeX) >= Math.abs(slopeY)
+      const depth = slopeAlongX ? spanX : spanZ
+      const width = slopeAlongX ? spanZ : spanX
+      // Local Z (default slope axis) points along +ground-axis-1. Rotate it onto
+      // the measured slope axis. For a shed, also flip 180° when the downhill
+      // points the opposite way so the low eave is on the correct side.
+      let rotation = slopeAlongX ? Math.PI / 2 : 0
+      if (roofKind === 'shed') {
+        const facing = slopeAlongX ? slopeX : slopeY
+        if (facing < 0) rotation += Math.PI
+      }
 
       const roofId = generateId('roof')
       const segId = generateId('rseg')
@@ -1777,17 +1912,18 @@ export async function convertIfcToPascal(
       const buildingNode = Object.values(nodes).find((n) => n.type === 'building')
       const parentNodeId = buildingNode?.id ?? topLevelId ?? null
 
+      const roofName = roofKind === 'shed' ? 'Pultdach' : roofKind === 'flat' ? 'Flachdach' : 'Dach'
       const roofNode = tryParse(RoofNode, 'roof', {
         object: 'node',
         id: roofId,
         type: 'roof',
-        name: 'Dach',
+        name: roofName,
         parentId: parentNodeId,
         visible: true,
         position: [centerX, eaveY, centerZ],
         rotation,
         children: [segId],
-        metadata: buildMetadata({ ifcType: 'IFCROOF', pitchDeg }),
+        metadata: buildMetadata({ ifcType: 'IFCROOF', roofKind, pitchDeg }),
       })
       const segNode = tryParse(RoofSegmentNode, 'roof-segment', {
         object: 'node',
@@ -1798,12 +1934,16 @@ export async function convertIfcToPascal(
         visible: true,
         position: [0, 0, 0],
         rotation: 0,
-        roofType: 'gable',
+        roofType: roofKind,
         width,
         depth,
-        pitch: pitchDeg,
+        pitch: roofKind === 'flat' ? 0 : pitchDeg,
         wallHeight: 0,
       })
+
+      console.log(
+        `[IFC→Pascal] Roof: ${roofKind} (pitch=${pitchDeg.toFixed(0)}°, w=${width.toFixed(2)}, d=${depth.toFixed(2)})`,
+      )
 
       nodes[roofId] = roofNode
       nodes[segId] = segNode
