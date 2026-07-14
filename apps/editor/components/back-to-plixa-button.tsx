@@ -17,6 +17,31 @@ import { useTranslation } from 'react-i18next'
 
 const PLIXA_KONFIGURATOR_URL = 'https://plixa-ten.vercel.app/konfigurator'
 
+/**
+ * Ziel-URL für die Rückkehr zu Plixa bestimmen. Plixa hängt an die Editor-URL
+ * `&return=<plixa-adresse>` an (die genaue Adresse, auf der der Nutzer geplant
+ * hat — localStorage ist pro Adresse getrennt). Wir kehren DORTHIN zurück, mit
+ * `result=<glb-url>` angehängt. Fehlt/ungültig der return-Parameter, fällt es
+ * auf die feste Konfigurator-Adresse zurück. Nur https + `*.vercel.app`
+ * zugelassen (kein Open-Redirect auf beliebige Hosts).
+ */
+function buildReturnUrl(resultUrl: string): string {
+  const fallback = `${PLIXA_KONFIGURATOR_URL}?result=${encodeURIComponent(resultUrl)}`
+  if (typeof window === 'undefined') return fallback
+  const ret = new URLSearchParams(window.location.search).get('return')
+  if (!ret) return fallback
+  try {
+    const target = new URL(ret)
+    if (target.protocol !== 'https:' || !target.hostname.toLowerCase().endsWith('.vercel.app')) {
+      return fallback
+    }
+    target.searchParams.set('result', resultUrl)
+    return target.toString()
+  } catch {
+    return fallback
+  }
+}
+
 /** Die `scene-renderer`-Gruppe über einen registrierten Knoten finden. */
 function findSceneRendererGroup() {
   for (const object of sceneRegistry.nodes.values()) {
@@ -77,7 +102,7 @@ export function BackToPlixaButton() {
         throw new Error(data.error ?? `upload_http_${res.status}: ${raw.slice(0, 200)}`)
       }
 
-      window.location.href = `${PLIXA_KONFIGURATOR_URL}?result=${encodeURIComponent(data.url)}`
+      window.location.href = buildReturnUrl(data.url)
     } catch (err) {
       useViewer.getState().setExporting(false)
       console.error('[plixa handoff] Rückweg fehlgeschlagen:', err)
