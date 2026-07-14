@@ -1,7 +1,7 @@
 import { Agentation } from 'agentation'
 import { GeistPixelSquare } from 'geist/font/pixel'
 import type { Metadata } from 'next'
-import { Barlow, Fraunces, Inter } from 'next/font/google'
+import { Barlow, Fraunces, Inter, JetBrains_Mono } from 'next/font/google'
 import localFont from 'next/font/local'
 import { I18nProvider } from '@/components/i18n-provider'
 import { ClientBootstrap } from './client-bootstrap'
@@ -37,6 +37,13 @@ const fraunces = Fraunces({
   variable: '--font-fraunces',
   display: 'swap',
 })
+// Zahlen/Maße im Plixa-Stil: JetBrains Mono mit Tabellenziffern.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Plixa Planer',
@@ -50,7 +57,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      className={`${geistSans.variable} ${geistMono.variable} ${GeistPixelSquare.variable} ${barlow.variable} ${inter.variable} ${fraunces.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${GeistPixelSquare.variable} ${barlow.variable} ${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
       lang="de"
     >
       <head>

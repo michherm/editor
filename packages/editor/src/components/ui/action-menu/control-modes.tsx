@@ -27,24 +27,24 @@ const controls: ControlConfig[] = [
     imageSrc: '/icons/select.webp',
     label: 'Select',
     shortcut: 'V',
-    color: 'hover:bg-blue-500/20 hover:text-blue-400',
-    activeColor: 'bg-blue-500/20 text-blue-400',
+    color: 'hover:bg-accent hover:text-foreground',
+    activeColor: 'bg-accent text-foreground',
   },
   {
     id: 'zone',
     imageSrc: '/icons/zone.webp',
     label: 'Zone',
     shortcut: 'Z',
-    color: 'hover:bg-green-500/20 hover:text-green-400',
-    activeColor: 'bg-green-500/20 text-green-400',
+    color: 'hover:bg-accent hover:text-foreground',
+    activeColor: 'bg-accent text-foreground',
   },
   {
     id: 'delete',
     icon: Trash2,
     label: 'Delete',
     shortcut: 'X',
-    color: 'hover:bg-red-500/20 hover:text-red-400',
-    activeColor: 'bg-red-500/20 text-red-400',
+    color: 'hover:bg-destructive/15 hover:text-destructive',
+    activeColor: 'bg-destructive/15 text-destructive',
   },
 ]
 
@@ -108,8 +108,8 @@ export function ControlModes() {
               'group text-muted-foreground',
               !(isImageMode || isActive) && c.color,
               !isImageMode && isActive && c.activeColor,
-              isImageMode && isActive && 'bg-white/10 hover:bg-white/10',
-              isImageMode && !isActive && 'hover:bg-white/5',
+              isImageMode && isActive && 'bg-accent hover:bg-accent',
+              isImageMode && !isActive && 'hover:bg-accent',
             )}
             key={c.id}
             label={c.label}

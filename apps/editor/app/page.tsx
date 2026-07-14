@@ -128,7 +128,7 @@ export default function Home() {
       )}
       {PROJECT_ID === 'local-editor' && (
         <div className="pointer-events-none absolute top-16 left-1/2 z-40 hidden -translate-x-1/2 lg:block">
-          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-border/60 bg-background/90 px-4 py-1.5 text-xs shadow-sm backdrop-blur">
+          <div className="plixa-card plixa-rise pointer-events-auto flex items-center gap-3 rounded-full px-4 py-1.5 text-xs">
             <span className="text-muted-foreground">{t('app.localScenes')}</span>
             <Link className="font-medium text-foreground hover:underline" href="/scenes">
               {t('app.openRecent')}
@@ -142,6 +142,12 @@ export default function Home() {
           </div>
         </div>
       )}
+      {/* Dezenter Start-Hinweis: was man hier tun kann (nur Desktop, unten mittig). */}
+      <div className="pointer-events-none absolute bottom-24 left-1/2 z-30 hidden -translate-x-1/2 lg:block">
+        <div className="plixa-card plixa-rise rounded-full px-3.5 py-1.5 text-[11px] text-muted-foreground">
+          {t('app.startHint')}
+        </div>
+      </div>
       <Editor
         layoutVersion="v2"
         projectId={PROJECT_ID}

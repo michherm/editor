@@ -187,20 +187,20 @@ export function ParametricInspector({
                 <>
                   <ActionButton
                     className="w-full flex-none"
-                    icon={<Trash2 className="h-4 w-4 text-red-400" />}
+                    icon={<Trash2 className="h-4 w-4 text-destructive" />}
                     label="Delete"
                     onClick={() => handleDelete(false)}
                   />
                   <ActionButton
                     className="w-full flex-none"
-                    icon={<Trash2 className="h-4 w-4 text-red-400" />}
+                    icon={<Trash2 className="h-4 w-4 text-destructive" />}
                     label="Delete with contents"
                     onClick={() => handleDelete(true)}
                   />
                 </>
               ) : (
                 <ActionButton
-                  className="border-red-500/40 text-red-200 hover:bg-red-500/15"
+                  className="border-destructive/40 text-destructive hover:bg-destructive/10"
                   icon={<Trash2 className="h-4 w-4" />}
                   label="Delete"
                   onClick={() => handleDelete()}
@@ -354,7 +354,7 @@ function FieldRenderer({ field, nodeId, onUpdate }: FieldRendererProps) {
         <div className="flex items-center justify-between px-3 py-2">
           <span className="text-foreground/80 text-xs">{prettifyKey(key)}</span>
           <select
-            className="rounded-md border border-border/50 bg-[#2C2C2E] px-2 py-1 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground/30"
+            className="rounded-md border border-border/50 bg-secondary px-2 py-1 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground/30"
             onChange={(e) => onUpdate({ [key]: e.target.value } as Partial<AnyNode>)}
             value={str}
           >
@@ -381,7 +381,7 @@ function FieldRenderer({ field, nodeId, onUpdate }: FieldRendererProps) {
               value={str}
             />
             <input
-              className="w-20 rounded-md border border-border/50 bg-[#2C2C2E] px-2 py-1 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground/30"
+              className="w-20 rounded-md border border-border/50 bg-secondary px-2 py-1 text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-foreground/30"
               onChange={(e) => onUpdate({ [key]: e.target.value } as Partial<AnyNode>)}
               type="text"
               value={str}

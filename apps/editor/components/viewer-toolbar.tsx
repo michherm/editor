@@ -41,14 +41,19 @@ import {
 import Image from 'next/image'
 import { type ReactNode, useCallback } from 'react'
 import { flushSync } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from './toolbar-tooltip'
 
+// Helle Glas-Karte (Plixa) statt dunkler Balken — schwebt über der 3D-Ansicht.
 const TOOLBAR_CONTAINER =
-  'inline-flex h-8 items-stretch overflow-hidden rounded-xl border border-border bg-background/90 shadow-2xl backdrop-blur-md'
+  'inline-flex h-8 items-stretch overflow-hidden rounded-xl border border-border bg-card/90 shadow-lg backdrop-blur-md'
 
 const TOOLBAR_BTN =
-  'flex w-8 items-center justify-center text-muted-foreground/80 transition-colors hover:bg-white/8 hover:text-foreground/90'
+  'flex w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
+
+// Aktiver Zustand (neutral-warm, kein Zweit-Akzent).
+const TOOLBAR_ACTIVE = 'bg-accent text-foreground'
 
 function requestWalkthroughPointerLock() {
   const canvas = document.querySelector<HTMLCanvasElement>('[data-pascal-viewer-3d] canvas')
@@ -112,24 +117,25 @@ const VIEW_MODES: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
 ]
 
 const levelModeOrder = ['stacked', 'exploded', 'solo'] as const
-const levelModeLabels: Record<string, string> = {
-  manual: 'Stack',
-  stacked: 'Stack',
-  exploded: 'Exploded',
-  solo: 'Solo',
+// Modus → i18n-Schlüssel (Beschriftung wird beim Rendern übersetzt).
+const levelModeKeys: Record<string, string> = {
+  manual: 'levelStack',
+  stacked: 'levelStack',
+  exploded: 'levelExploded',
+  solo: 'levelSolo',
 }
 
 const wallModeOrder = ['cutaway', 'up', 'down', 'translucent'] as const
-const wallModeConfig: Record<string, { icon: string; label: string }> = {
-  up: { icon: '/icons/room.webp', label: 'Full height' },
-  cutaway: { icon: '/icons/wallcut.webp', label: 'Cutaway' },
-  down: { icon: '/icons/walllow.webp', label: 'Low' },
-  translucent: { icon: '/icons/wall.webp', label: 'Translucent' },
+const wallModeConfig: Record<string, { icon: string; key: string }> = {
+  up: { icon: '/icons/room.webp', key: 'wallFull' },
+  cutaway: { icon: '/icons/wallcut.webp', key: 'wallCutaway' },
+  down: { icon: '/icons/walllow.webp', key: 'wallLow' },
+  translucent: { icon: '/icons/wall.webp', key: 'wallTranslucent' },
 }
 
 const SHADING_OPTIONS = [
-  { id: 'solid', name: 'Solid', detail: 'Flat and fast — no ambient occlusion', icon: Box },
-  { id: 'rendered', name: 'Rendered', detail: 'Full ambient occlusion', icon: Sparkles },
+  { id: 'solid', nameKey: 'renderSolid', detailKey: 'renderSolidHint', icon: Box },
+  { id: 'rendered', nameKey: 'renderRendered', detailKey: 'renderRenderedHint', icon: Sparkles },
 ] as const
 
 function ViewModeControl() {
@@ -148,8 +154,8 @@ function ViewModeControl() {
               className={cn(
                 'flex items-center justify-center gap-1.5 px-2.5 font-medium text-xs transition-colors',
                 isActive
-                  ? 'bg-white/10 text-foreground'
-                  : 'text-muted-foreground/70 hover:bg-white/8 hover:text-muted-foreground',
+                  ? TOOLBAR_ACTIVE
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
               onClick={() => setViewMode(mode.id)}
               type="button"
@@ -165,6 +171,7 @@ function ViewModeControl() {
 }
 
 function CollapseSidebarButton() {
+  const { t } = useTranslation()
   const isCollapsed = useSidebarStore((state) => state.isCollapsed)
   const setIsCollapsed = useSidebarStore((state) => state.setIsCollapsed)
 
@@ -172,15 +179,12 @@ function CollapseSidebarButton() {
     setIsCollapsed(!isCollapsed)
   }, [isCollapsed, setIsCollapsed])
 
+  const label = isCollapsed ? t('viewer.expandSidebar') : t('viewer.collapseSidebar')
+
   return (
     <div className={TOOLBAR_CONTAINER}>
-      <ToolbarTooltip label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-        <button
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={TOOLBAR_BTN}
-          onClick={toggle}
-          type="button"
-        >
+      <ToolbarTooltip label={label}>
+        <button aria-label={label} className={TOOLBAR_BTN} onClick={toggle} type="button">
           {isCollapsed ? (
             <ChevronsRight className="h-4 w-4" />
           ) : (
@@ -193,6 +197,7 @@ function CollapseSidebarButton() {
 }
 
 function LevelModeToggle() {
+  const { t } = useTranslation()
   const levelMode = useViewer((state) => state.levelMode)
   const setLevelMode = useViewer((state) => state.setLevelMode)
   const isDefault = levelMode === 'stacked' || levelMode === 'manual'
@@ -208,16 +213,12 @@ function LevelModeToggle() {
     if (next) setLevelMode(next)
   }
 
-  const label = `Levels: ${levelMode === 'manual' ? 'Manual' : (levelModeLabels[levelMode] ?? 'Stack')}`
+  const modeLabel = t(`viewer.${levelModeKeys[levelMode] ?? 'levelStack'}`)
 
   return (
-    <ToolbarTooltip label={label}>
+    <ToolbarTooltip label={`${t('viewer.levels')}: ${modeLabel}`}>
       <button
-        className={cn(
-          TOOLBAR_BTN,
-          'w-auto gap-1.5 px-2.5',
-          !isDefault && 'bg-white/10 text-foreground/90',
-        )}
+        className={cn(TOOLBAR_BTN, 'w-auto gap-1.5 px-2.5', !isDefault && TOOLBAR_ACTIVE)}
         onClick={cycle}
         type="button"
       >
@@ -228,13 +229,14 @@ function LevelModeToggle() {
         ) : (
           <IconifyIcon height={14} icon="charm:stack-push" width={14} />
         )}
-        <span className="font-medium text-xs">{levelModeLabels[levelMode] ?? 'Stack'}</span>
+        <span className="font-medium text-xs">{modeLabel}</span>
       </button>
     </ToolbarTooltip>
   )
 }
 
 function WallModeToggle() {
+  const { t } = useTranslation()
   const wallMode = useViewer((state) => state.wallMode)
   const setWallMode = useViewer((state) => state.setWallMode)
   const config = wallModeConfig[wallMode] ?? wallModeConfig.cutaway!
@@ -245,21 +247,23 @@ function WallModeToggle() {
     if (next) setWallMode(next)
   }
 
+  const modeLabel = t(`viewer.${config.key}`)
+
   return (
-    <ToolbarTooltip label={`Walls: ${config.label}`}>
+    <ToolbarTooltip label={`${t('viewer.walls')}: ${modeLabel}`}>
       <button
         className={cn(
           TOOLBAR_BTN,
           'w-auto gap-1.5 px-2.5',
           wallMode !== 'cutaway'
-            ? 'bg-white/10'
+            ? TOOLBAR_ACTIVE
             : 'opacity-60 grayscale hover:opacity-100 hover:grayscale-0',
         )}
         onClick={cycle}
         type="button"
       >
         <Image alt="" className="h-4 w-4 object-contain" height={16} src={config.icon} width={16} />
-        <span className="font-medium text-xs">{config.label}</span>
+        <span className="font-medium text-xs">{modeLabel}</span>
       </button>
     </ToolbarTooltip>
   )
@@ -269,10 +273,10 @@ function WallModeToggle() {
 // camera projection, units, render mode, edges and scene theme.
 
 const EDGE_OPTIONS = [
-  { id: 'off', name: 'Off', detail: 'No edge lines' },
-  { id: 'soft', name: 'Soft', detail: 'Faint outline of major creases' },
-  { id: 'strong', name: 'Strong', detail: 'Crisp, opaque edge lines' },
-] as const satisfies readonly { id: EdgeMode; name: string; detail: string }[]
+  { id: 'off', nameKey: 'edgeOff', detailKey: 'edgeOffHint' },
+  { id: 'soft', nameKey: 'edgeSoft', detailKey: 'edgeSoftHint' },
+  { id: 'strong', nameKey: 'edgeStrong', detailKey: 'edgeStrongHint' },
+] as const satisfies readonly { id: EdgeMode; nameKey: string; detailKey: string }[]
 
 const SUBMENU_CONTENT_CLASS = 'min-w-56 rounded-xl border-border/45 bg-popover/95 backdrop-blur-xl'
 
@@ -294,6 +298,7 @@ function DisplayMenu() {
   const magneticSnap = useEditor((state) => state.magneticSnap)
   const setMagneticSnap = useEditor((state) => state.setMagneticSnap)
 
+  const { t } = useTranslation()
   const activeShading =
     SHADING_OPTIONS.find((option) => option.id === shading) ?? SHADING_OPTIONS[0]
   const activeEdges = EDGE_OPTIONS.find((option) => option.id === edges) ?? EDGE_OPTIONS[0]
@@ -307,15 +312,15 @@ function DisplayMenu() {
 
   return (
     <DropdownMenu>
-      <ToolbarTooltip label="Display settings">
+      <ToolbarTooltip label={t('viewer.displaySettings')}>
         <DropdownMenuTrigger asChild>
           <button
-            aria-label="Display settings"
-            className={cn(TOOLBAR_BTN, 'w-auto gap-1.5 px-2.5 text-foreground/90')}
+            aria-label={t('viewer.displaySettings')}
+            className={cn(TOOLBAR_BTN, 'w-auto gap-1.5 px-2.5 text-foreground')}
             type="button"
           >
             <SlidersHorizontal className="h-3.5 w-3.5 shrink-0" />
-            <span className="font-medium text-xs">Display</span>
+            <span className="font-medium text-xs">{t('viewer.display')}</span>
           </button>
         </DropdownMenuTrigger>
       </ToolbarTooltip>
@@ -327,7 +332,7 @@ function DisplayMenu() {
       >
         <DropdownMenuItem onSelect={(e) => keepOpen(e, () => setShowGrid(!showGrid))}>
           <Grid2X2 className="h-4 w-4" />
-          <span>Grid</span>
+          <span>{t('viewer.grid')}</span>
           {showGrid ? (
             <Eye className="ml-auto h-4 w-4 text-foreground" />
           ) : (
@@ -336,15 +341,17 @@ function DisplayMenu() {
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={(e) => keepOpen(e, () => setMagneticSnap(!magneticSnap))}>
           <Magnet className="h-4 w-4" />
-          <span>Magnetic snap</span>
+          <span>{t('viewer.snap')}</span>
           <span className="ml-auto text-muted-foreground text-xs">
-            {magneticSnap ? 'On' : 'Off'}
+            {magneticSnap ? t('viewer.on') : t('viewer.off')}
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={(e) => keepOpen(e, () => setShadows(!shadows))}>
           <Contrast className="h-4 w-4" />
-          <span>Shadows</span>
-          <span className="ml-auto text-muted-foreground text-xs">{shadows ? 'On' : 'Off'}</span>
+          <span>{t('viewer.shadows')}</span>
+          <span className="ml-auto text-muted-foreground text-xs">
+            {shadows ? t('viewer.on') : t('viewer.off')}
+          </span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={(e) =>
@@ -358,9 +365,9 @@ function DisplayMenu() {
             icon={cameraMode === 'perspective' ? 'icon-park-outline:perspective' : 'vaadin:grid'}
             width={16}
           />
-          <span>Camera</span>
+          <span>{t('viewer.camera')}</span>
           <span className="ml-auto text-muted-foreground text-xs">
-            {cameraMode === 'perspective' ? 'Perspective' : 'Orthographic'}
+            {cameraMode === 'perspective' ? t('viewer.perspective') : t('viewer.ortho')}
           </span>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -369,9 +376,9 @@ function DisplayMenu() {
           <span className="flex h-4 w-4 items-center justify-center font-semibold text-[10px]">
             {unit === 'metric' ? 'm' : 'ft'}
           </span>
-          <span>Units</span>
+          <span>{t('viewer.units')}</span>
           <span className="ml-auto text-muted-foreground text-xs">
-            {unit === 'metric' ? 'Metric' : 'Imperial'}
+            {unit === 'metric' ? t('viewer.metric') : t('viewer.imperial')}
           </span>
         </DropdownMenuItem>
 
@@ -380,8 +387,10 @@ function DisplayMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <activeShading.icon className="h-4 w-4" />
-            <span>Render</span>
-            <span className="ml-auto text-muted-foreground text-xs">{activeShading.name}</span>
+            <span>{t('viewer.render')}</span>
+            <span className="ml-auto text-muted-foreground text-xs">
+              {t(`viewer.${activeShading.nameKey}`)}
+            </span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className={SUBMENU_CONTENT_CLASS}>
             {SHADING_OPTIONS.map((option) => {
@@ -390,8 +399,10 @@ function DisplayMenu() {
                 <DropdownMenuItem key={option.id} onSelect={() => setShading(option.id)}>
                   <OptionIcon className="h-4 w-4" />
                   <div className="flex flex-col">
-                    <span className="text-foreground">{option.name}</span>
-                    <span className="text-muted-foreground text-xs">{option.detail}</span>
+                    <span className="text-foreground">{t(`viewer.${option.nameKey}`)}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {t(`viewer.${option.detailKey}`)}
+                    </span>
                   </div>
                   {shading === option.id ? (
                     <Check className="ml-auto h-4 w-4 text-foreground" />
@@ -405,15 +416,19 @@ function DisplayMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <PenLine className="h-4 w-4" />
-            <span>Edges</span>
-            <span className="ml-auto text-muted-foreground text-xs">{activeEdges.name}</span>
+            <span>{t('viewer.edges')}</span>
+            <span className="ml-auto text-muted-foreground text-xs">
+              {t(`viewer.${activeEdges.nameKey}`)}
+            </span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className={SUBMENU_CONTENT_CLASS}>
             {EDGE_OPTIONS.map((option) => (
               <DropdownMenuItem key={option.id} onSelect={() => setEdges(option.id)}>
                 <div className="flex flex-col">
-                  <span className="text-foreground">{option.name}</span>
-                  <span className="text-muted-foreground text-xs">{option.detail}</span>
+                  <span className="text-foreground">{t(`viewer.${option.nameKey}`)}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {t(`viewer.${option.detailKey}`)}
+                  </span>
                 </div>
                 {edges === option.id ? <Check className="ml-auto h-4 w-4 text-foreground" /> : null}
               </DropdownMenuItem>
@@ -424,7 +439,7 @@ function DisplayMenu() {
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <SwatchBook className="h-4 w-4" />
-            <span>Theme</span>
+            <span>{t('viewer.theme')}</span>
             <span className="ml-auto truncate text-muted-foreground text-xs">
               {activeTheme.name}
             </span>
@@ -459,6 +474,7 @@ function DisplayMenu() {
 }
 
 function WalkthroughButton() {
+  const { t } = useTranslation()
   const isFirstPersonMode = useEditor((state) => state.isFirstPersonMode)
   const setFirstPersonMode = useEditor((state) => state.setFirstPersonMode)
   const handleClick = useCallback(() => {
@@ -472,12 +488,9 @@ function WalkthroughButton() {
   }, [isFirstPersonMode, setFirstPersonMode])
 
   return (
-    <ToolbarTooltip label="Walkthrough">
+    <ToolbarTooltip label={t('viewer.walkthrough')}>
       <button
-        className={cn(
-          TOOLBAR_BTN,
-          isFirstPersonMode && 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/20',
-        )}
+        className={cn(TOOLBAR_BTN, isFirstPersonMode && 'bg-accent text-primary')}
         onClick={handleClick}
         type="button"
       >
@@ -488,15 +501,16 @@ function WalkthroughButton() {
 }
 
 function PreviewButton() {
+  const { t } = useTranslation()
   return (
-    <ToolbarTooltip label="Preview mode">
+    <ToolbarTooltip label={t('viewer.preview')}>
       <button
-        className="flex items-center gap-1.5 px-2.5 font-medium text-muted-foreground/80 text-xs transition-colors hover:bg-white/8 hover:text-foreground/90"
+        className="flex items-center gap-1.5 px-2.5 font-medium text-muted-foreground text-xs transition-colors hover:bg-accent hover:text-foreground"
         onClick={() => useEditor.getState().setPreviewMode(true)}
         type="button"
       >
         <Eye className="h-3.5 w-3.5 shrink-0" />
-        <span>Preview</span>
+        <span>{t('viewer.preview')}</span>
       </button>
     </ToolbarTooltip>
   )

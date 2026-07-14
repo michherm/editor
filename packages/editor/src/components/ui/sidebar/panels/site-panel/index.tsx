@@ -171,7 +171,7 @@ const PropertyLineSection = memo(function PropertyLineSection() {
           className={cn(
             'flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-colors',
             isEditing
-              ? 'bg-orange-500/20 text-orange-400'
+              ? 'bg-accent text-primary'
               : 'text-muted-foreground hover:bg-accent',
           )}
           onClick={handleToggleEdit}
@@ -398,7 +398,7 @@ const ReferenceItem = memo(function ReferenceItem({
       </div>
 
       <button
-        className="z-20 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/ref:opacity-100 dark:hover:bg-white/10"
+        className="z-20 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/ref:opacity-100 dark:hover:bg-accent"
         onClick={(e) => handleDelete(refNode.id, e)}
         title="Delete"
       >
@@ -761,7 +761,7 @@ const LevelItem = memo(function LevelItem({
               className={cn(
                 'relative mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md opacity-0 transition-colors group-hover/level:opacity-100',
                 selectedLevelId === level.id
-                  ? 'hover:bg-black/5 dark:hover:bg-white/10'
+                  ? 'hover:bg-black/5 dark:hover:bg-accent'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
               onClick={(e) => e.stopPropagation()}
@@ -826,7 +826,7 @@ const LevelItem = memo(function LevelItem({
               className={cn(
                 'mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md opacity-0 transition-colors group-hover/level:opacity-100',
                 selectedLevelId === level.id
-                  ? 'hover:bg-black/5 dark:hover:bg-white/10'
+                  ? 'hover:bg-black/5 dark:hover:bg-accent'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
               onClick={(e) => e.stopPropagation()}
@@ -995,13 +995,13 @@ const LayerToggle = memo(function LayerToggle() {
           : 'none'
 
   return (
-    <div className="relative flex items-center gap-1 border-border/50 border-b bg-[#ece7dc] p-1">
+    <div className="relative flex items-center gap-1 border-border/50 border-b bg-secondary p-1">
       <button
         className={cn(
           'relative flex flex-1 cursor-pointer flex-col items-center justify-center rounded-md py-2 font-medium text-[10px] transition-all duration-200',
           activeTab === 'structure'
             ? 'text-foreground'
-            : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
         )}
         onClick={() => {
           setPhase('structure')
@@ -1038,7 +1038,7 @@ const LayerToggle = memo(function LayerToggle() {
           'relative flex flex-1 cursor-pointer flex-col items-center justify-center rounded-md py-2 font-medium text-[10px] transition-all duration-200',
           activeTab === 'furnish'
             ? 'text-foreground'
-            : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
         )}
         onClick={() => {
           setPhase('furnish')
@@ -1074,7 +1074,7 @@ const LayerToggle = memo(function LayerToggle() {
           'relative flex flex-1 cursor-pointer flex-col items-center justify-center rounded-md py-2 font-medium text-[10px] transition-all duration-200',
           activeTab === 'zones'
             ? 'text-foreground'
-            : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
         )}
         onClick={() => {
           setPhase('structure')
@@ -1204,7 +1204,7 @@ const ZoneItem = memo(function ZoneItem({ zone, isLast }: { zone: ZoneNode; isLa
         <Popover onOpenChange={setCameraPopoverOpen} open={cameraPopoverOpen}>
           <PopoverTrigger asChild>
             <button
-              className="relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
+              className="relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-accent"
               onClick={(e) => e.stopPropagation()}
               title="Camera snapshot"
             >
@@ -1262,7 +1262,7 @@ const ZoneItem = memo(function ZoneItem({ zone, isLast }: { zone: ZoneNode; isLa
           </PopoverContent>
         </Popover>
         <button
-          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-white/10"
+          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition-colors hover:bg-black/5 hover:text-foreground group-hover/row:opacity-100 dark:hover:bg-accent"
           onClick={handleDelete}
         >
           <Trash2 className="h-3 w-3" />
@@ -1449,7 +1449,7 @@ const BuildingItem = memo(function BuildingItem({
               className={cn(
                 'relative mr-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md opacity-0 transition-colors group-hover/building:opacity-100',
                 isBuildingActive
-                  ? 'text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10'
+                  ? 'text-muted-foreground hover:bg-black/5 hover:text-foreground dark:hover:bg-accent'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground',
               )}
               onClick={(e) => e.stopPropagation()}
@@ -1599,7 +1599,7 @@ export function SitePanel({ projectId, onUploadAsset, onDeleteAsset }: SitePanel
             <CameraPopover
               buttonClassName={cn(
                 'transition-colors',
-                phase === 'site' ? 'hover:bg-black/5 dark:hover:bg-white/10' : 'hover:bg-accent',
+                phase === 'site' ? 'hover:bg-black/5 dark:hover:bg-accent' : 'hover:bg-accent',
               )}
               hasCamera={!!siteNode.camera}
               nodeId={siteNode.id as AnyNodeId}

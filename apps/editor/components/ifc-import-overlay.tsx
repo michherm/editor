@@ -20,29 +20,34 @@ export function IfcImportOverlay({
   const pct = Math.max(0, Math.min(100, Math.round(percent)))
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#12100c]/80 backdrop-blur-sm">
-      <div className="flex w-80 flex-col items-center gap-4 rounded-2xl border border-white/10 bg-[#1b1813] px-6 py-7 text-center shadow-2xl">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#11181f]/25 backdrop-blur-sm">
+      <div className="plixa-card plixa-rise flex w-80 flex-col items-center gap-4 px-6 py-7 text-center">
         {error ? (
           <>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#b23b34] font-bold text-white">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-destructive font-bold text-white">
               !
             </div>
             <div>
-              <div className="font-semibold text-sm text-white">{t('handoff.importFailed')}</div>
-              <div className="mt-1 break-words text-xs text-white/60">{error}</div>
+              <div className="font-semibold text-foreground text-sm">
+                {t('handoff.importFailed')}
+              </div>
+              <div className="mt-1 break-words text-muted-foreground text-xs">{error}</div>
             </div>
           </>
         ) : (
           <>
-            <span className="pascal-loader-2" style={{ width: 28, height: 28, color: '#d39440' }} />
+            <span
+              className="pascal-loader-2"
+              style={{ width: 28, height: 28, color: 'var(--plixa-amber)' }}
+            />
             <div>
-              <div className="font-semibold text-sm text-white">{t('handoff.importing')}</div>
-              <div className="mt-1 text-xs text-white/60">{message}</div>
+              <div className="font-semibold text-foreground text-sm">{t('handoff.importing')}</div>
+              <div className="mt-1 text-muted-foreground text-xs">{message}</div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
                 className="h-full rounded-full transition-[width] duration-300"
-                style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #e3b14e, #d39440)' }}
+                style={{ width: `${pct}%`, background: 'var(--plixa-active-gradient)' }}
               />
             </div>
           </>

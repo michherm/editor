@@ -9,9 +9,57 @@
  */
 
 export type Translation = {
-  app: { localScenes: string; openRecent: string; createNew: string }
+  app: {
+    localScenes: string
+    openRecent: string
+    createNew: string
+    startHint?: string
+  }
   tab: { scene: string; build: string; items: string; settings: string }
   ls: { search: string; none: string }
+  /* Werkzeugleiste über der 3D-Ansicht. Optional: fehlt eine Sprache, greift
+     die deutsche Fallback-Sprache (fallbackLng: 'de'). */
+  viewer?: {
+    collapseSidebar: string
+    expandSidebar: string
+    levels: string
+    levelStack: string
+    levelExploded: string
+    levelSolo: string
+    walls: string
+    wallFull: string
+    wallCutaway: string
+    wallLow: string
+    wallTranslucent: string
+    display: string
+    displaySettings: string
+    grid: string
+    snap: string
+    shadows: string
+    camera: string
+    perspective: string
+    ortho: string
+    units: string
+    metric: string
+    imperial: string
+    render: string
+    renderSolid: string
+    renderSolidHint: string
+    renderRendered: string
+    renderRenderedHint: string
+    edges: string
+    edgeOff: string
+    edgeOffHint: string
+    edgeSoft: string
+    edgeSoftHint: string
+    edgeStrong: string
+    edgeStrongHint: string
+    theme: string
+    walkthrough: string
+    preview: string
+    on: string
+    off: string
+  }
   cnc: {
     heading: string
     previewNote: string
@@ -59,9 +107,51 @@ const de: Translation = {
     localScenes: 'Lokaler Editor — Szenen werden nicht gespeichert.',
     openRecent: 'Zuletzt geöffnete Szenen',
     createNew: 'Neu erstellen',
+    startHint: 'Ziehen zum Drehen · scrollen zum Zoomen · Objekt anklicken zum Bearbeiten',
   },
   tab: { scene: 'Szene', build: 'Bauen', items: 'Objekte', settings: 'Einstellungen' },
   ls: { search: 'Sprache suchen…', none: 'Kein Treffer' },
+  viewer: {
+    collapseSidebar: 'Seitenleiste einklappen',
+    expandSidebar: 'Seitenleiste ausklappen',
+    levels: 'Etagen',
+    levelStack: 'Gestapelt',
+    levelExploded: 'Auseinander',
+    levelSolo: 'Einzeln',
+    walls: 'Wände',
+    wallFull: 'Volle Höhe',
+    wallCutaway: 'Schnitt',
+    wallLow: 'Niedrig',
+    wallTranslucent: 'Transparent',
+    display: 'Ansicht',
+    displaySettings: 'Anzeige-Einstellungen',
+    grid: 'Raster',
+    snap: 'Magnet',
+    shadows: 'Schatten',
+    camera: 'Kamera',
+    perspective: 'Perspektive',
+    ortho: 'Orthografisch',
+    units: 'Einheiten',
+    metric: 'Metrisch',
+    imperial: 'Imperial',
+    render: 'Darstellung',
+    renderSolid: 'Einfach',
+    renderSolidHint: 'Flach und schnell — ohne Umgebungsverschattung',
+    renderRendered: 'Gerendert',
+    renderRenderedHint: 'Volle Umgebungsverschattung',
+    edges: 'Kanten',
+    edgeOff: 'Aus',
+    edgeOffHint: 'Keine Kantenlinien',
+    edgeSoft: 'Weich',
+    edgeSoftHint: 'Zarte Umrisse der Hauptkanten',
+    edgeStrong: 'Stark',
+    edgeStrongHint: 'Klare, deckende Kantenlinien',
+    theme: 'Farbschema',
+    walkthrough: 'Begehung',
+    preview: 'Vorschau',
+    on: 'An',
+    off: 'Aus',
+  },
   cnc: {
     heading: 'Plixa CNC / Fertigung',
     previewNote:
@@ -111,9 +201,51 @@ const en: Translation = {
     localScenes: 'Local editor — scenes are not saved.',
     openRecent: 'Open recent scenes',
     createNew: 'Create new',
+    startHint: 'Drag to rotate · scroll to zoom · click an object to edit',
   },
   tab: { scene: 'Scene', build: 'Build', items: 'Items', settings: 'Settings' },
   ls: { search: 'Search language…', none: 'No match' },
+  viewer: {
+    collapseSidebar: 'Collapse sidebar',
+    expandSidebar: 'Expand sidebar',
+    levels: 'Levels',
+    levelStack: 'Stacked',
+    levelExploded: 'Exploded',
+    levelSolo: 'Solo',
+    walls: 'Walls',
+    wallFull: 'Full height',
+    wallCutaway: 'Cutaway',
+    wallLow: 'Low',
+    wallTranslucent: 'Translucent',
+    display: 'Display',
+    displaySettings: 'Display settings',
+    grid: 'Grid',
+    snap: 'Magnetic snap',
+    shadows: 'Shadows',
+    camera: 'Camera',
+    perspective: 'Perspective',
+    ortho: 'Orthographic',
+    units: 'Units',
+    metric: 'Metric',
+    imperial: 'Imperial',
+    render: 'Render',
+    renderSolid: 'Solid',
+    renderSolidHint: 'Flat and fast — no ambient occlusion',
+    renderRendered: 'Rendered',
+    renderRenderedHint: 'Full ambient occlusion',
+    edges: 'Edges',
+    edgeOff: 'Off',
+    edgeOffHint: 'No edge lines',
+    edgeSoft: 'Soft',
+    edgeSoftHint: 'Faint outline of major creases',
+    edgeStrong: 'Strong',
+    edgeStrongHint: 'Crisp, opaque edge lines',
+    theme: 'Theme',
+    walkthrough: 'Walkthrough',
+    preview: 'Preview',
+    on: 'On',
+    off: 'Off',
+  },
   cnc: {
     heading: 'Plixa CNC / Manufacturing',
     previewNote:
