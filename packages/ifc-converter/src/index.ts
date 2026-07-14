@@ -8,6 +8,7 @@ import {
   DoorNode,
   LevelNode,
   RoofNode,
+  RoofSegmentNode,
   SiteNode,
   SlabNode,
   StairNode,
@@ -1647,93 +1648,121 @@ export async function convertIfcToPascal(
     }
   }
 
-  // Process roofs
-  const roofs = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCROOF)
-  for (let i = 0; i < roofs.size(); i++) {
-    const roofExpressID = roofs.get(i)
-    if (expressIdToNodeId.has(roofExpressID)) continue
-
-    const roof = ifcApi.GetLine(modelID, roofExpressID)
-    const nodeId = generateId('roof')
-    expressIdToNodeId.set(roofExpressID, nodeId)
-
-    const parentExpressID = parentMap.get(roofExpressID)
-    const parentNodeId = parentExpressID ? expressIdToNodeId.get(parentExpressID) : null
-
-    let polygon: [number, number][] | undefined
-    let elevation: number | undefined
-    let height: number | undefined
-
-    try {
-      const worldMat = roof.ObjectPlacement?.value
-        ? resolveWorldTransform(ifcApi, modelID, roof.ObjectPlacement.value)
-        : identity()
-      const s = worldToScene(transformPoint3(worldMat, [0, 0, 0]))
-      elevation = s[2]
-
-      const body = getBodyExtrusionData(ifcApi, modelID, roof)
-      if (body.depth) height = body.depth * unitFactor
-
-      const extrusionMat = getExtrusionPosition(ifcApi, modelID, roof)
-
-      if (body.profilePoints && body.profilePoints.length >= 3) {
-        const combinedMat = extrusionMat ? multiply(worldMat, extrusionMat) : worldMat
-        polygon = body.profilePoints.map((pt) => {
-          const sc = worldToScene(transformPoint3(combinedMat, [pt[0], pt[1], 0]))
-          return [sc[0], sc[1]] as [number, number]
-        })
-        const first = polygon[0]
-        const last = polygon[polygon.length - 1]
-        if (
-          polygon.length > 3 &&
-          Math.abs(first[0] - last[0]) < 1e-6 &&
-          Math.abs(first[1] - last[1]) < 1e-6
-        ) {
-          polygon.pop()
-        }
-      } else if (body.xDim && body.yDim) {
-        const hw = body.xDim / 2
-        const hh = body.yDim / 2
-        const corners: number[][] = [
-          [-hw, -hh, 0],
-          [hw, -hh, 0],
-          [hw, hh, 0],
-          [-hw, hh, 0],
-        ]
-        const combinedMat = extrusionMat ? multiply(worldMat, extrusionMat) : worldMat
-        polygon = corners.map((c) => {
-          const sc = worldToScene(transformPoint3(combinedMat, c))
-          return [sc[0], sc[1]] as [number, number]
-        })
+  // Process roofs.
+  //
+  // Pascal has no "arbitrary tilted plate" node — its roof is PARAMETRIC
+  // (RoofNode → RoofSegmentNode with a shape + pitch). Plixa's IFC ships the
+  // roof as many small tilted IfcRoof plates (e.g. Skylark's `..._ROOF_M42`
+  // modules); mapping each to its own node produced empty RoofNodes that
+  // rendered nothing (the "Dach fehlt" bug). Instead we reconstruct ONE gable
+  // roof from the collective footprint + pitch and seat it on the top storey's
+  // walls. The pitch comes from the module tag (`M42` → 42°); the footprint and
+  // eave height come from the already-built walls/levels (clean node space, no
+  // placement-axis maths needed).
+  const roofIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCROOF)
+  if (roofIds.size() > 0) {
+    // Pitch from any roof module's name/predefined type ("...M42" → 42°).
+    let pitchDeg = 42
+    for (let i = 0; i < roofIds.size(); i++) {
+      const roof = ifcApi.GetLine(modelID, roofIds.get(i))
+      const label = String(roof.Name?.value ?? roof.PredefinedType?.value ?? '')
+      const m = label.match(/M\s*(\d{2})/i) ?? label.match(/(\d{2})\s*°/)
+      const deg = m ? Number(m[1]) : Number.NaN
+      if (Number.isFinite(deg) && deg > 5 && deg < 80) {
+        pitchDeg = deg
+        break
       }
-    } catch {
-      /* keep defaults */
     }
 
-    const roofNode = tryParse(RoofNode, 'roof', {
-      object: 'node',
-      id: nodeId,
-      type: 'roof',
-      name: roof.Name?.value || `Roof ${i + 1}`,
-      parentId: parentNodeId || null,
-      visible: true,
-      elevation,
-      // TODO(ifc-fix): Pascal RoofNode is composed of roof-segments. The
-      // converter only has the flat polygon + height; pass them through
-      // metadata until we map the IFC roof onto the segment-based shape.
-      metadata: buildMetadata({
-        ifcType: 'IFCROOF',
-        expressID: roofExpressID,
-        globalId: roof.GlobalId?.value,
-        predefinedType: roof.PredefinedType?.value,
-        polygon,
-        height,
-      }),
-    })
+    // Footprint + eave height from the reconstructed walls/levels.
+    const wallNodes = Object.values(nodes).filter((n) => n.type === 'wall') as WallNode[]
+    const levelNodes = Object.values(nodes).filter((n) => n.type === 'level') as LevelNode[]
+    let minX = Infinity
+    let maxX = -Infinity
+    let minZ = Infinity
+    let maxZ = -Infinity
+    for (const w of wallNodes) {
+      for (const pt of [w.start, w.end]) {
+        if (!pt) continue
+        minX = Math.min(minX, pt[0])
+        maxX = Math.max(maxX, pt[0])
+        minZ = Math.min(minZ, pt[1])
+        maxZ = Math.max(maxZ, pt[1])
+      }
+    }
 
-    nodes[nodeId] = roofNode
-    if (parentNodeId && nodes[parentNodeId]) {
-      ;(nodes[parentNodeId] as any).children?.push(nodeId)
+    const hasFootprint = Number.isFinite(minX) && maxX > minX && maxZ > minZ
+    if (hasFootprint) {
+      const spanX = maxX - minX
+      const spanZ = maxZ - minZ
+      const centerX = (minX + maxX) / 2
+      const centerZ = (minZ + maxZ) / 2
+
+      // Eave = top of the highest storey's walls.
+      const levelElevation = (l: LevelNode): number =>
+        (l as { elevation?: number }).elevation ??
+        (meta(l).elevation as number | undefined) ??
+        0
+      const topLevel = levelNodes.reduce<LevelNode | null>(
+        (best, l) => (best && levelElevation(best) >= levelElevation(l) ? best : l),
+        null,
+      )
+      const topElev = topLevel ? levelElevation(topLevel) : 0
+      const topLevelId = topLevel?.id
+      const topWallHeights = wallNodes
+        .filter((w) => (!topLevelId || w.parentId === topLevelId) && (w.height ?? 0) > 0.5)
+        .map((w) => w.height ?? 0)
+      const topWallHeight = topWallHeights.length
+        ? Math.max(...topWallHeights)
+        : DEFAULT_WALL_HEIGHT
+      const eaveY = topElev + topWallHeight
+
+      // Gable ridge runs along `width`; the roof slopes across `depth`. Put the
+      // ridge along the longer footprint axis (the common gable orientation).
+      const ridgeAlongX = spanX >= spanZ
+      const width = ridgeAlongX ? spanX : spanZ
+      const depth = ridgeAlongX ? spanZ : spanX
+      const rotation = ridgeAlongX ? 0 : Math.PI / 2
+
+      const roofId = generateId('roof')
+      const segId = generateId('rseg')
+
+      const buildingNode = Object.values(nodes).find((n) => n.type === 'building')
+      const parentNodeId = buildingNode?.id ?? topLevelId ?? null
+
+      const roofNode = tryParse(RoofNode, 'roof', {
+        object: 'node',
+        id: roofId,
+        type: 'roof',
+        name: 'Dach',
+        parentId: parentNodeId,
+        visible: true,
+        position: [centerX, eaveY, centerZ],
+        rotation,
+        children: [segId],
+        metadata: buildMetadata({ ifcType: 'IFCROOF', pitchDeg }),
+      })
+      const segNode = tryParse(RoofSegmentNode, 'roof-segment', {
+        object: 'node',
+        id: segId,
+        type: 'roof-segment',
+        name: 'Dachfläche',
+        parentId: roofId,
+        visible: true,
+        position: [0, 0, 0],
+        rotation: 0,
+        roofType: 'gable',
+        width,
+        depth,
+        pitch: pitchDeg,
+        wallHeight: 0,
+      })
+
+      nodes[roofId] = roofNode
+      nodes[segId] = segNode
+      if (parentNodeId && nodes[parentNodeId]) {
+        ;(nodes[parentNodeId] as { children?: string[] }).children?.push(roofId)
+      }
     }
   }
 
