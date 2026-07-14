@@ -10,6 +10,7 @@ import {
   RoofNode,
   RoofSegmentNode,
   SiteNode,
+  SkylightNode,
   SlabNode,
   StairNode,
   WallNode,
@@ -1046,6 +1047,12 @@ export async function convertIfcToPascal(
     for (let i = 0; i < ids.size(); i++) windowExpressIds.add(ids.get(i))
   }
 
+  // Dachfenster (skylights): Plixa exports them as IfcWindows named
+  // "…_SKYLIGHT_…" with no wall opening, so they belong on the ROOF, not in a
+  // wall. Collected here (world scene position + size) and rebuilt as Pascal
+  // SkylightNodes on the reconstructed roof segment in the roof pass below.
+  const skylightHints: { sx: number; sz: number; sy: number; width: number; height: number }[] = []
+
   // Process walls (both IFCWALL and IFCWALLSTANDARDCASE)
   const wallTypes = [WebIFC.IFCWALL, WebIFC.IFCWALLSTANDARDCASE]
   for (const wallType of wallTypes) {
@@ -1450,6 +1457,19 @@ export async function convertIfcToPascal(
         /* no placement */
       }
 
+      // A Dachfenster: hold it for the roof pass instead of forcing it into a
+      // wall (which would place it as a bogus vertical window).
+      if (!isDoor && /skylight|dachfenster/i.test(String(element.Name?.value ?? '')) && scene) {
+        skylightHints.push({
+          sx: scene[0],
+          sz: scene[1],
+          sy: scene[2],
+          width: width ?? 1.0,
+          height: height ?? 1.0,
+        })
+        continue
+      }
+
       const effWidth = width ?? (isDoor ? 0.9 : 1.0)
       const hosted = scene ? findHostWall(scene[0], scene[1], effWidth) : null
 
@@ -1742,7 +1762,8 @@ export async function convertIfcToPascal(
   // come from the already-built walls/levels (clean node space).
   const roofIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCROOF)
   if (roofIds.size() > 0) {
-    // Read every roof plate's world box (mesh frame: Y up, ground on X/Z).
+    // Read every roof plate's world box (mesh frame: Y up, ground on X/Z) plus
+    // its module name (carries the pitch for the actual roof panels).
     const modules = [] as {
       cx: number
       cz: number
@@ -1750,10 +1771,14 @@ export async function convertIfcToPascal(
       dx: number
       dz: number
       height: number
+      name: string
     }[]
     for (let i = 0; i < roofIds.size(); i++) {
       const box = getRoofModuleBox(ifcApi, modelID, roofIds.get(i))
-      if (box) modules.push(box)
+      if (box) {
+        const name = String(ifcApi.GetLine(modelID, roofIds.get(i)).Name?.value ?? '')
+        modules.push({ ...box, name })
+      }
     }
 
     // Separate the big roof panels from the thin verge/eave trims by ground
@@ -1788,14 +1813,18 @@ export async function convertIfcToPascal(
     const roofKind: 'flat' | 'shed' | 'gable' =
       tilted.length === 0 ? 'flat' : runClusters <= 1 ? 'shed' : 'gable'
 
-    // Pitch: the Skylark module name carries it (…_ROOF_M42 = 42°, _M10 = 10°);
-    // trust that first, then fall back to estimating it from the tilted panel's
-    // rise over its run, then a sane default. Flat roofs are 0°.
+    // Pitch: the Skylark roof-panel name carries it, but the exact format varies
+    // by system — 250: "…_ROOF_M42" / "…_ROOF_M10"; 200: "…_ROOF_42_XXS";
+    // 150: "…R-XXS-42". Strip the "SKYLARK<nnn>" prefix (so the 150/200/250 in
+    // the family name isn't mistaken for the pitch) and take the first 1–2 digit
+    // token. Read only the tilted PANELS' names (gable-end walls also ship as
+    // IfcRoof and carry a "…G42…" tag that would mislead). Fall back to a
+    // geometry estimate (rise over run), then a sane default. Flat roofs are 0°.
     let pitchDeg = 0
     if (roofKind !== 'flat') {
-      for (let i = 0; i < roofIds.size(); i++) {
-        const label = String(ifcApi.GetLine(modelID, roofIds.get(i)).Name?.value ?? '')
-        const m = label.match(/M\s*0*(\d{1,2})(?!\d)/i) ?? label.match(/(\d{1,2})\s*°/)
+      for (const b of tilted) {
+        const rest = b.name.replace(/^SKYLARK\s*\d+[ _-]*/i, '')
+        const m = rest.match(/(\d{1,2})(?!\d)/) ?? rest.match(/(\d{1,2})\s*°/)
         const deg = m ? Number(m[1]) : Number.NaN
         if (Number.isFinite(deg) && deg >= 3 && deg <= 80) {
           pitchDeg = deg
@@ -1949,6 +1978,42 @@ export async function convertIfcToPascal(
       nodes[segId] = segNode
       if (parentNodeId && nodes[parentNodeId]) {
         ;(nodes[parentNodeId] as { children?: string[] }).children?.push(roofId)
+      }
+
+      // Dachfenster: rebuild each collected skylight as a Pascal SkylightNode
+      // hosted on this segment. The segment sits at world [centerX, eaveY,
+      // centerZ] rotated `rotation` about Y; its local frame is X along the
+      // ridge, Z across the slope. Map each skylight's world ground position
+      // into that frame — the renderer then projects it onto the sloped surface
+      // (position[0] = along-ridge, position[2] = across-slope). Skipped for
+      // flat roofs (Plixa only places skylights on pitched roofs).
+      if (roofKind !== 'flat') {
+        const cos = Math.cos(rotation)
+        const sin = Math.sin(rotation)
+        for (const s of skylightHints) {
+          const relX = s.sx - centerX
+          const relZ = s.sz - centerZ
+          // Inverse Y-rotation (world → segment-local).
+          const lx = relX * cos - relZ * sin
+          const lz = relX * sin + relZ * cos
+          const skyId = generateId('skylight')
+          const skyNode = tryParse(SkylightNode, 'skylight', {
+            object: 'node',
+            id: skyId,
+            type: 'skylight',
+            name: 'Dachfenster',
+            parentId: segId,
+            visible: true,
+            roofSegmentId: segId,
+            position: [lx, 0, lz],
+            rotation: 0,
+            width: s.width,
+            height: s.height,
+            skylightType: 'opening',
+          })
+          nodes[skyId] = skyNode
+          ;(nodes[segId] as { children?: string[] }).children?.push(skyId)
+        }
       }
     }
   }
