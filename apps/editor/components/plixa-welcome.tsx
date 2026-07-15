@@ -28,6 +28,28 @@ export function PlixaWelcome() {
     setOpen(false)
   }
 
+  // Alles verwerfen und das exakte Haus frisch laden. Löscht die gespeicherte
+  // Bearbeitung (Pascal-Autosave) UND die Fortsetzungs-Marke, damit der Editor
+  // beim Neuladen wieder sauber aus der exakten Geometrie (`&geo=`) aufbaut —
+  // die Rettung, falls eine Bearbeitung das Modell zerlegt hat.
+  const resetToOriginal = () => {
+    if (typeof window === 'undefined') return
+    const ok = window.confirm(
+      t('welcome.resetConfirm', {
+        defaultValue:
+          'Zurück zum Original-Haus? Deine bisherige Bearbeitung (Möbel, Änderungen) wird verworfen.',
+      }),
+    )
+    if (!ok) return
+    try {
+      window.localStorage.removeItem('pascal-editor-scene')
+      window.localStorage.removeItem('plixa-last-project')
+    } catch {
+      // ignore
+    }
+    window.location.reload()
+  }
+
   const steps = [
     {
       icon: '🏠',
@@ -108,6 +130,13 @@ export function PlixaWelcome() {
               style={{ background: 'linear-gradient(180deg, #e3b14e, #d39440)' }}
             >
               {t('welcome.cta', { defaultValue: "Los geht's" })}
+            </button>
+            <button
+              type="button"
+              onClick={resetToOriginal}
+              className="mt-2 w-full rounded-lg border border-border px-4 py-2 font-medium text-muted-foreground text-xs transition hover:bg-accent hover:text-foreground"
+            >
+              {t('welcome.reset', { defaultValue: '↺ Zurück zum Original-Haus (Bearbeitung verwerfen)' })}
             </button>
           </div>
         </div>
