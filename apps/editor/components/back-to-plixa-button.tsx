@@ -54,6 +54,32 @@ function findSceneRendererGroup() {
   return null
 }
 
+/**
+ * Das exakte Plixa-Haus-Item (die 1:1-Referenzgeometrie aus `&geo=`) für den
+ * Rückweg-Export unsichtbar schalten. Plixa HAT das Haus bereits und zeigt das
+ * Ergebnis als Schicht DARÜBER — zurück soll also nur, was der Nutzer HINZUGEFÜGT
+ * hat (Möbel). Ohne dies bäckt die ~57-MB-Referenz ins Ergebnis-GLB, das dann an
+ * der 4,5-MB-Body-Grenze der Serverless-Funktion scheitert (413 → „Export
+ * fehlgeschlagen"). `exportSceneToGlb` klont die Szene synchron, sodass diese
+ * imperative Sichtbarkeit greift, bevor React sie aus `node.visible` neu setzt.
+ * Gibt eine Restore-Funktion zurück.
+ */
+function hideExactHouseForExport(): () => void {
+  const nodes = useScene.getState().nodes
+  const houseNode = Object.values(nodes).find(
+    (n) =>
+      (n as { type?: string }).type === 'item' &&
+      (n as { asset?: { id?: string } }).asset?.id === 'plixa-exact-house',
+  ) as { id?: string } | undefined
+  const obj = houseNode?.id ? sceneRegistry.nodes.get(houseNode.id) : undefined
+  if (!obj) return () => {}
+  const prev = obj.visible
+  obj.visible = false
+  return () => {
+    obj.visible = prev
+  }
+}
+
 export function BackToPlixaButton() {
   const { t } = useTranslation()
   const [busy, setBusy] = useState(false)
@@ -79,8 +105,16 @@ export function BackToPlixaButton() {
       const sceneGroup = findSceneRendererGroup()
       if (!sceneGroup) throw new Error('scene-renderer nicht gefunden')
 
-      const buffer = await exportSceneToGlb(sceneGroup, useScene.getState().nodes)
-      useViewer.getState().setExporting(false)
+      // Das exakte Plixa-Haus (Referenzgeometrie) NICHT zurückschicken — nur die
+      // Ergänzungen des Nutzers. Direkt vor dem (synchronen) Klon ausblenden.
+      const restoreHouse = hideExactHouseForExport()
+      let buffer: ArrayBuffer
+      try {
+        buffer = await exportSceneToGlb(sceneGroup, useScene.getState().nodes)
+      } finally {
+        restoreHouse()
+        useViewer.getState().setExporting(false)
+      }
       console.info(`[plixa handoff] GLB exportiert: ${(buffer.byteLength / 1024 / 1024).toFixed(2)} MB`)
 
       const res = await fetch('/api/handoff-result', {
