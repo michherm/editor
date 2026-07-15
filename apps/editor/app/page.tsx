@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { PlixaNavbar } from '@/components/plixa-navbar'
 import { BuildTab } from '@/components/build-tab'
 import { IfcImportOverlay } from '@/components/ifc-import-overlay'
+import { PlixaWelcome } from '@/components/plixa-welcome'
 import { uploadLocalScan } from '@/lib/local-scan-upload'
 import {
   CommunityViewerToolbarLeft,
@@ -152,6 +153,7 @@ export default function Home() {
 
   return (
     <div className="relative h-screen w-screen">
+      <PlixaWelcome />
       {ifcUrl && (importError || (importProgress && importProgress.percent < 100)) && (
         <IfcImportOverlay
           message={importProgress?.message ?? ''}
