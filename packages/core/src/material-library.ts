@@ -58,6 +58,7 @@ const CEILING_TARGETS: MaterialTarget[] = [MaterialTargetSchema.enum.ceiling]
 
 export const MATERIAL_CATEGORIES = [
   'colors',
+  'wallpaper',
   'wood',
   'stone',
   'brick',
@@ -4164,6 +4165,50 @@ export const MATERIAL_CATALOG: MaterialCatalogItem[] = [
       },
     },
   },
+  // --- Tapeten (Wallpaper) -------------------------------------------------
+  // Nahtlos kachelbare Muster als eingebettete SVG-data-URI-Texturen (kein
+  // externes Hosting nötig; AssetUrl erlaubt `data:image/`). Der KI stehen sie
+  // über list_materials / set_surface_material sofort zur Verfügung.
+  ...(
+    [
+      { id: 'wallpaper-stripe', label: 'Tapete Streifen', preview: '#e2d8c2', url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNlZmU5ZGQiLz48cmVjdCB4PSIwIiB3aWR0aD0iNjQiIGhlaWdodD0iMTI4IiBmaWxsPSIjZGNkMmJkIi8+PC9zdmc+' },
+      { id: 'wallpaper-dots', label: 'Tapete Punkte', preview: '#e6dcc9', url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNmMmVkZTIiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIxMCIgZmlsbD0iI2M4Yjc5YSIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9IjEwIiBmaWxsPSIjYzhiNzlhIi8+PC9zdmc+' },
+      { id: 'wallpaper-grid', label: 'Tapete Raster', preview: '#e3dccc', url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNlZWU4ZGIiLz48cGF0aCBkPSJNMCAwSDEyOE0wIDY0SDEyOE0wIDEyOEgxMjhNMCAwVjEyOE02NCAwVjEyOE0xMjggMFYxMjgiIHN0cm9rZT0iI2QzYzhiMiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+' },
+      { id: 'wallpaper-damask', label: 'Tapete Ornament', preview: '#ddd0b6', url: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMTI4IDEyOCI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNlY2U2ZDgiLz48ZyBmaWxsPSIjY2RiZmEyIj48cGF0aCBkPSJNNjQgMjBjMTQgMTAgMTQgMzAgMCA0MC0xNC0xMC0xNC0zMCAwLTQweiIvPjxwYXRoIGQ9Ik0wIDg0YzE0IDEwIDE0IDMwIDAgNDAtMTQtMTAtMTQtMzAgMC00MHpNMTI4IDg0Yy0xNCAxMC0xNCAzMCAwIDQwIDE0LTEwIDE0LTMwIDAtNDB6Ii8+PC9nPjwvc3ZnPg==' },
+    ] as const
+  ).map((w) => ({
+    id: w.id,
+    label: w.label,
+    category: 'wallpaper' as MaterialCategory,
+    surfaces: ['wall'] as MaterialSurface[],
+    description: 'Nahtlose Tapete',
+    previewColor: w.preview,
+    preset: {
+      maps: { albedoMap: w.url },
+      mapProperties: {
+        color: '#ffffff',
+        roughness: 0.9,
+        metalness: 0,
+        repeatX: 6,
+        repeatY: 6,
+        rotation: 0,
+        wrapS: 'Repeat' as const,
+        wrapT: 'Repeat' as const,
+        normalScaleX: 1,
+        normalScaleY: 1,
+        emissiveIntensity: 1,
+        displacementScale: 0,
+        transparent: false,
+        flipY: true,
+        bumpScale: 1,
+        emissiveColor: '#000000',
+        aoMapIntensity: 1,
+        side: 0,
+        opacity: 1,
+        lightMapIntensity: 1,
+      },
+    },
+  })),
 ]
 
 export function getMaterialsForCategory(category: MaterialCategory): MaterialCatalogItem[] {
