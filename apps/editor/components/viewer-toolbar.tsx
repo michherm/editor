@@ -34,6 +34,7 @@ import {
   Grid2X2,
   Magnet,
   PenLine,
+  Scissors,
   SlidersHorizontal,
   Sparkles,
   SwatchBook,
@@ -473,6 +474,89 @@ function DisplayMenu() {
   )
 }
 
+// „Dach ausblenden / Blick hinein": waagerechter Schnitt am exakten (einteiligen)
+// Haus-Modell. Ein/Aus + zwei Höhen-Regler (oben/unten) → Dach weg oder nur eine
+// Etage sichtbar, damit man drin möblieren kann. Radix-Dropdown wird portalt,
+// also nicht vom overflow-hidden der Toolbar abgeschnitten.
+function SectionControl() {
+  const { t } = useTranslation()
+  const enabled = useViewer((state) => state.sectionEnabled)
+  const min = useViewer((state) => state.sectionMin)
+  const max = useViewer((state) => state.sectionMax)
+  const setSection = useViewer((state) => state.setSection)
+
+  return (
+    <DropdownMenu>
+      <ToolbarTooltip label={t('section.title', { defaultValue: 'Dach / Schnitt' })}>
+        <DropdownMenuTrigger asChild>
+          <button
+            aria-label={t('section.title', { defaultValue: 'Dach / Schnitt' })}
+            className={cn(TOOLBAR_BTN, 'w-auto gap-1.5 px-2.5', enabled && TOOLBAR_ACTIVE)}
+            type="button"
+          >
+            <Scissors className="h-3.5 w-3.5 shrink-0" />
+            <span className="font-medium text-xs">{t('section.short', { defaultValue: 'Dach' })}</span>
+          </button>
+        </DropdownMenuTrigger>
+      </ToolbarTooltip>
+      <DropdownMenuContent
+        align="end"
+        className="w-64 rounded-xl border-border/45 bg-popover/95 p-3 backdrop-blur-xl"
+        side="bottom"
+        sideOffset={8}
+      >
+        <label className="flex cursor-pointer items-center justify-between gap-2 text-foreground text-sm">
+          <span>{t('section.hide', { defaultValue: 'Dach ausblenden' })}</span>
+          <input
+            checked={enabled}
+            onChange={(e) => setSection({ enabled: e.target.checked })}
+            type="checkbox"
+          />
+        </label>
+        <div className={cn('mt-3 flex flex-col gap-3', !enabled && 'pointer-events-none opacity-40')}>
+          <div>
+            <div className="mb-1 flex justify-between text-muted-foreground text-xs">
+              <span>{t('section.top', { defaultValue: 'Schnitt oben' })}</span>
+              <span className="tabular-nums">{max.toFixed(1)} m</span>
+            </div>
+            <input
+              className="w-full accent-[var(--plixa-amber,#d39440)]"
+              max={12}
+              min={0}
+              onChange={(e) => setSection({ max: Number(e.target.value) })}
+              step={0.1}
+              type="range"
+              value={max}
+            />
+          </div>
+          <div>
+            <div className="mb-1 flex justify-between text-muted-foreground text-xs">
+              <span>{t('section.bottom', { defaultValue: 'Schnitt unten' })}</span>
+              <span className="tabular-nums">{min.toFixed(1)} m</span>
+            </div>
+            <input
+              className="w-full accent-[var(--plixa-amber,#d39440)]"
+              max={12}
+              min={0}
+              onChange={(e) => setSection({ min: Number(e.target.value) })}
+              step={0.1}
+              type="range"
+              value={min}
+            />
+          </div>
+        </div>
+        <button
+          className="mt-3 w-full rounded-lg bg-accent px-3 py-1.5 font-medium text-foreground text-xs transition hover:brightness-105"
+          onClick={() => setSection({ enabled: true, min: 0, max: 3 })}
+          type="button"
+        >
+          {t('section.groundOnly', { defaultValue: 'Nur Erdgeschoss zeigen' })}
+        </button>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 function WalkthroughButton() {
   const { t } = useTranslation()
   const isFirstPersonMode = useEditor((state) => state.isFirstPersonMode)
@@ -530,6 +614,7 @@ export function CommunityViewerToolbarRight() {
     <div className={TOOLBAR_CONTAINER}>
       <LevelModeToggle />
       <WallModeToggle />
+      <SectionControl />
       <div className="my-1.5 w-px bg-border/50" />
       <DisplayMenu />
       <div className="my-1.5 w-px bg-border/50" />

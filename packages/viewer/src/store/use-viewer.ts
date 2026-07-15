@@ -86,6 +86,14 @@ type ViewerState = {
   wallMode: 'up' | 'cutaway' | 'down' | 'translucent'
   setWallMode: (mode: 'up' | 'cutaway' | 'down' | 'translucent') => void
 
+  // Waagerechter Schnitt („Dach ausblenden / Blick hinein"): blendet alles
+  // außerhalb des Höhenbands [sectionMin, sectionMax] aus (Y in Weltmetern).
+  // Öffnet das exakte, einteilige Haus-Modell wie ein Puppenhaus zum Möblieren.
+  sectionEnabled: boolean
+  sectionMin: number
+  sectionMax: number
+  setSection: (patch: Partial<{ enabled: boolean; min: number; max: number }>) => void
+
   showScans: boolean
   setShowScans: (show: boolean) => void
 
@@ -299,6 +307,16 @@ const useViewer = create<ViewerState>()(
 
       wallMode: 'up',
       setWallMode: (mode) => set({ wallMode: mode }),
+
+      sectionEnabled: false,
+      sectionMin: 0,
+      sectionMax: 12,
+      setSection: (patch) =>
+        set((s) => ({
+          sectionEnabled: patch.enabled ?? s.sectionEnabled,
+          sectionMin: patch.min ?? s.sectionMin,
+          sectionMax: patch.max ?? s.sectionMax,
+        })),
 
       showScans: true,
       setShowScans: (show) =>
