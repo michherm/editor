@@ -17,13 +17,24 @@ import { useTranslation } from 'react-i18next'
 
 const AMBER = '#d39440'
 const MAX_ITERATIONS = 16
-// Werkzeuge, die im Chat keinen Sinn ergeben (Binär-/Bild-/Export-Tools).
-const TOOL_DENYLIST = new Set([
-  'export_glb',
-  'export_json',
-  'analyze_floorplan_image',
-  'analyze_room_photo',
-  'photo_to_scene',
+// SICHERHEIT: Das Haus kommt als exaktes, fertiges Modell in den Editor. Die KI
+// darf es GESTALTEN (Möbel stellen, Material auftragen) und BEFRAGEN — aber NIE
+// umbauen. Frühere Bau-/Lösch-Werkzeuge (Wände neu bauen, Öffnungen schneiden,
+// Ebenen/Zonen anlegen, löschen, Roh-Patches) haben das exakte Modell zerstört,
+// wenn der Nutzer z. B. „setz Fenster ein / mach ein Ziegeldach" sagte. Deshalb
+// eine ERLAUBNISLISTE statt Sperrliste: nur bekannt-sichere Werkzeuge, alles
+// andere (auch künftige) bleibt draußen.
+const TOOL_ALLOWLIST = new Set([
+  'place_item', // Möbel/Objekte platzieren (sichtbar, sicher)
+  'set_surface_material', // Material/Farbe auf eine Wand auftragen
+  'list_materials', // Material-Katalog lesen
+  'get_scene', // Szene lesen
+  'get_node',
+  'describe_node',
+  'find_nodes',
+  'measure', // Maße/Flächen abfragen
+  'undo', // sichere Umkehr
+  'redo',
 ])
 
 type DisplayRole = 'user' | 'assistant'
@@ -92,7 +103,7 @@ export default function PlixaAiPanel() {
     await client.connect(clientTransport)
     const listed = await client.listTools()
     const tools: AnthropicTool[] = listed.tools
-      .filter((tool) => !TOOL_DENYLIST.has(tool.name))
+      .filter((tool) => TOOL_ALLOWLIST.has(tool.name))
       .map((tool) => ({
         name: tool.name,
         description: tool.description ?? '',
