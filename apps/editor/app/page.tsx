@@ -14,7 +14,7 @@ import {
   CommunityViewerToolbarLeft,
   CommunityViewerToolbarRight,
 } from '@/components/viewer-toolbar'
-import { createIfcOnLoad, readIfcHandoffUrl } from '@/lib/ifc-handoff'
+import { createIfcOnLoad, readGeoHandoffUrl, readIfcHandoffUrl } from '@/lib/ifc-handoff'
 
 // The open-source editor only ships the built-in catalog (no uploaded items),
 // so the Library/Community/Mine source chips and tag filters add nothing —
@@ -101,6 +101,9 @@ export default function Home() {
   // Hinweg-Übergabe: liegt `?ifc=<r2-url>` an, lädt der Editor sein Startbild aus
   // der IFC-Datei (statt aus localStorage) — direkt editierbar im gleichen Store.
   const [ifcUrl] = useState<string | null>(() => readIfcHandoffUrl())
+  // Weg B: exakte Plixa-Geometrie als GLB (`&geo=`) — falls vorhanden, ist sie
+  // die angezeigte Geometrie; die IFC liefert die editierbaren Knoten.
+  const [geoUrl] = useState<string | null>(() => readGeoHandoffUrl())
   const [importProgress, setImportProgress] = useState<{ message: string; percent: number } | null>(
     null,
   )
@@ -110,11 +113,12 @@ export default function Home() {
       ifcUrl
         ? createIfcOnLoad(
             ifcUrl,
+            geoUrl,
             (message, percent) => setImportProgress({ message, percent }),
             (message) => setImportError(message),
           )
         : undefined,
-    [ifcUrl],
+    [ifcUrl, geoUrl],
   )
 
   return (
