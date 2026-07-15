@@ -28,6 +28,7 @@ import { FloorElevationSystem } from '../../systems/floor-elevation/floor-elevat
 import { GeometrySystem } from '../../systems/geometry/geometry-system'
 import { ErrorBoundary } from '../error-boundary'
 import { SceneRenderer } from '../renderers/scene-renderer'
+import { ClippingController } from './clipping-controller'
 import FrameLimiter from './frame-limiter'
 import { Lights } from './lights'
 import { PerfMonitor } from './perf-monitor'
@@ -553,6 +554,7 @@ const Viewer = forwardRef<ViewerHandle, ViewerProps>(function Viewer(
       }}
     >
       <FrameLimiter fps={50} />
+      <ClippingController />
       <ViewerCamera />
       <GPUDeviceWatcher />
       <ToneMappingExposure />
