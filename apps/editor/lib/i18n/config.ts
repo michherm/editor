@@ -9,6 +9,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { resources } from './locales'
+import { helpResources } from './locales-help'
 
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
@@ -18,6 +19,12 @@ if (!i18n.isInitialized) {
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
   })
+  // Einführung (Hilfe) + KI-Beispiel-Prompts in allen 12 Sprachen einhängen.
+  // Deep-merge: `welcome.*` kommt neu dazu, `ai.starter.*` mischt sich unter das
+  // bestehende `ai`-Objekt, ohne `ai.heading/intro/example` zu überschreiben.
+  for (const [lng, bundle] of Object.entries(helpResources)) {
+    i18n.addResourceBundle(lng, 'translation', bundle, true, true)
+  }
 }
 
 export default i18n
