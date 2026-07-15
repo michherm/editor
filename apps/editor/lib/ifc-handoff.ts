@@ -9,17 +9,25 @@
  *  - `?ifc=` → mit `convertIfcToPascal` in editierbare Knoten (Wände/Öffnungen/
  *    Dach) umgesetzt. Das ist der Bearbeitungs-Layer.
  *  - `&geo=` (Weg B) → ein binäres GLB mit der EXAKTEN, maßstabsgetreuen
- *    Plixa-Geometrie (1 Einheit = 1 m, Y-up, Plixa-Weltkoordinaten, nicht
- *    gespiegelt). Liegt es an, wird es als ScanNode (Referenzmodell) in die Szene
- *    gelegt und als ANGEZEIGTE Geometrie verwendet; der parametrische IFC-Nachbau
- *    wird dann ausgeblendet (bleibt aber als editierbare Knoten erhalten). Fehlt
- *    `&geo=`, rendert der parametrische Nachbau wie bisher.
+ *    Plixa-Geometrie (1 Einheit = 1 m, Y-up, nicht gespiegelt). Liegt es an, wird
+ *    es als `ItemNode` (bedingungslos gerendertes GLB-Modell, 1 Einheit = 1 m) in
+ *    die Szene gelegt und ist die ANGEZEIGTE Geometrie — deckungsgleich per
+ *    Konstruktion, weil es dieselbe Mesh ist, die Plixa rendert (nichts wird
+ *    rekonstruiert). Der parametrische IFC-Nachbau wird dann ausgeblendet (bleibt
+ *    als editierbare Knoten erhalten). Fehlt `&geo=`, rendert der parametrische
+ *    Nachbau wie bisher.
+ *
+ * Warum `ItemNode` statt `ScanNode`? Die Sichtbarkeit einer ScanNode hängt am
+ * `showScans`-Schalter des Viewers (scan-system) und ist privacy-gated — als
+ * „die angezeigte Hausgeometrie" also fragil. Ein Item rendert sein GLB
+ * bedingungslos in nativem Maßstab (Clone mit scale = asset.scale × node.scale;
+ * `dimensions` skaliert das Modell NICHT, steuert nur Gizmo/Grundriss).
  *
  * Bewusst als `Editor`-`onLoad`-Funktion gebaut: der Editor lädt sein Ergebnis
  * über den normalen Lade-Lebenszyklus (`applySceneGraphToEditor`), es landet also
  * im gleichen Store, den der Editor rendert.
  */
-import { ScanNode, saveAsset } from '@pascal-app/core'
+import { ItemNode, saveAsset } from '@pascal-app/core'
 import type { SceneGraph } from '@pascal-app/editor'
 
 /** Liest die IFC-URL aus dem Query-String (nur im Browser). */
@@ -53,12 +61,15 @@ const GEOMETRY_NODE_TYPES = new Set([
 ])
 
 /**
- * Legt das exakte Plixa-GLB als Referenz-`ScanNode` in die Szene und blendet den
- * parametrischen Nachbau aus. Das GLB steht in Plixa-Weltkoordinaten (Y-up,
- * 1 Einheit = 1 m, nicht gespiegelt) — dieselben Koordinaten, in denen der
- * un-gespiegelte IFC-Import seine Knoten baut. Als Kind der Erdgeschoss-Ebene
- * (Elevation 0) fällt die Ebenen-Transformation weg, sodass `position [0,0,0]`
- * das Modell 1:1 über die editierbaren Knoten legt.
+ * Legt das exakte Plixa-GLB als `ItemNode` (immer sichtbares GLB-Modell,
+ * 1 Einheit = 1 m) in die Szene und blendet den parametrischen Nachbau aus.
+ *
+ * Das Modell wird per AABB auf den XZ-Ursprung zentriert und mit der Basis auf
+ * den Boden (y=0) der untersten Ebene gesetzt — unabhängig davon, an welcher
+ * Bauplatz-Position (cx,cz) die Plixa-„house"-Gruppe stand. Ohne diese
+ * Zentrierung könnte das Haus weit vom Ursprung (außerhalb des Sichtfelds)
+ * landen. Als Item ist die Sichtbarkeit an KEINEN Schalter gekoppelt (anders als
+ * bei einer ScanNode) und der Maßstab ist nativ (scale [1,1,1]).
  */
 async function attachExactGeometry(
   nodes: Record<string, unknown>,
@@ -69,6 +80,22 @@ async function attachExactGeometry(
   const res = await fetch(`/api/ifc?u=${encodeURIComponent(geoUrl)}`, { cache: 'no-store' })
   if (!res.ok) throw new Error(`GLB-Download fehlgeschlagen (${res.status})`)
   const buf = await res.arrayBuffer()
+
+  // AABB des GLB bestimmen (Zentrierung + Grundriss-Maße). Der GLTFLoader und
+  // three werden dynamisch geladen (nur im Browser, nur bei Übergabe).
+  const [{ GLTFLoader }, three] = await Promise.all([
+    import('three/examples/jsm/loaders/GLTFLoader.js'),
+    import('three'),
+  ])
+  const gltf = await new Promise<{ scene: unknown }>((resolve, reject) => {
+    new GLTFLoader().parse(buf.slice(0), '', (g: { scene: unknown }) => resolve(g), reject)
+  })
+  const box = new three.Box3().setFromObject(gltf.scene)
+  const size = new three.Vector3()
+  const center = new three.Vector3()
+  box.getSize(size)
+  box.getCenter(center)
+
   const file = new File([buf], 'plixa-haus.glb', { type: 'model/gltf-binary' })
   const assetUrl = await saveAsset(file)
 
@@ -84,17 +111,24 @@ async function attachExactGeometry(
   const elevationOf = (l: Levelish): number => l.elevation ?? l.metadata?.elevation ?? 0
   const ground = levels.sort((a, b) => elevationOf(a) - elevationOf(b))[0]
 
-  const scan = ScanNode.parse({
-    name: 'Plixa (exakte Geometrie)',
-    url: assetUrl,
-    position: [0, 0, 0],
+  const item = ItemNode.parse({
+    name: 'Plixa Haus (exakt)',
+    // XZ auf Ursprung zentrieren, Basis auf den Boden der untersten Ebene setzen.
+    position: [-center.x, -box.min.y, -center.z],
     rotation: [0, 0, 0],
-    scale: 1,
-    opacity: 100,
+    scale: [1, 1, 1],
     parentId: ground?.id ?? null,
+    asset: {
+      id: 'plixa-exact-house',
+      category: 'building',
+      name: 'Plixa Haus (exakt)',
+      thumbnail: '',
+      src: assetUrl,
+      dimensions: [size.x, size.y, size.z],
+    },
   })
-  ;(nodes as Record<string, unknown>)[scan.id] = scan
-  if (ground) ground.children = [...(ground.children ?? []), scan.id]
+  ;(nodes as Record<string, unknown>)[item.id] = item
+  if (ground) ground.children = [...(ground.children ?? []), item.id]
 
   // Sichtbare Geometrie kommt jetzt aus dem GLB → parametrischen Nachbau
   // ausblenden (Knoten bleiben editierbar).
