@@ -25,17 +25,39 @@ const MAX_ITERATIONS = 16
 // eine ERLAUBNISLISTE statt Sperrliste: nur bekannt-sichere Werkzeuge, alles
 // andere (auch künftige) bleibt draußen.
 const TOOL_ALLOWLIST = new Set([
-  'place_item', // Möbel/Objekte platzieren (sichtbar, sicher)
-  'set_surface_material', // Material/Farbe auf eine Wand auftragen
-  'list_materials', // Material-Katalog lesen
-  'get_scene', // Szene lesen
+  // Objekte/Einrichtung platzieren (Möbel, Deko, PV-Module, Pool, Carport … als Objekte)
+  'place_item',
+  'furnish_room',
+  'search_assets',
+  // Material & Böden (Farbe, Holz, Fliesen, Tapete, Parkett)
+  'set_surface_material',
+  'list_materials',
+  // Additiver Ausbau — HINZUFÜGEN, nie die Kern-Hülle/Dach ersetzen:
+  'create_wall', // Innenwände
+  'create_room',
+  'add_window', // Fenster/Dachfenster in Öffnungen
+  'add_door',
+  'cut_opening',
+  'create_stair_between_levels',
+  // Lesen / Prüfen (sicher)
+  'get_scene',
   'get_node',
   'describe_node',
   'find_nodes',
-  'measure', // Maße/Flächen abfragen
-  'undo', // sichere Umkehr
+  'get_walls',
+  'get_zones',
+  'list_levels',
+  'get_level_summary',
+  'measure',
+  'check_collisions',
+  'verify_scene',
+  'validate_scene',
+  // Umkehr
+  'undo',
   'redo',
 ])
+// BEWUSST NICHT erlaubt (zerstören/ersetzen die exakte Struktur): create_story_shell,
+// create_roof, create_level, duplicate_level, delete_node, apply_patch, set_zone.
 
 type DisplayRole = 'user' | 'assistant'
 type DisplayMessage = { role: DisplayRole; content: string }
