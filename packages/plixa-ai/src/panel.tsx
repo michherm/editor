@@ -52,9 +52,10 @@ const wrap: React.CSSProperties = {
 // bewusst noch KEIN Material/Tapete, das kommt erst mit dem Material-Werkzeug.
 // `de` ist der Default; via i18n-Schlüssel später übersetzbar.
 const STARTER_PROMPTS: { key: string; de: string }[] = [
+  { key: 'ai.starter.paint', de: 'Streich eine Innenwand hellblau.' },
+  { key: 'ai.starter.brick', de: 'Mach eine Wand aus Backstein.' },
   { key: 'ai.starter.sofa', de: 'Stell ein Sofa in den größten Raum.' },
   { key: 'ai.starter.window', de: 'Schneide ein Fenster in die Südwand.' },
-  { key: 'ai.starter.door', de: 'Füge eine Tür zwischen zwei Räumen ein.' },
   { key: 'ai.starter.area', de: 'Wie viele Quadratmeter hat das Erdgeschoss?' },
 ]
 
