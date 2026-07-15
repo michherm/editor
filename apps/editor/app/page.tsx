@@ -1,10 +1,10 @@
 'use client'
 
-import { Editor, ItemsPanel } from '@pascal-app/editor'
+import { Editor, ItemsPanel, loadSceneFromLocalStorage } from '@pascal-app/editor'
 import { Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PlixaNavbar } from '@/components/plixa-navbar'
 import { BuildTab } from '@/components/build-tab'
@@ -14,7 +14,17 @@ import {
   CommunityViewerToolbarLeft,
   CommunityViewerToolbarRight,
 } from '@/components/viewer-toolbar'
-import { createIfcOnLoad, readGeoHandoffUrl, readIfcHandoffUrl } from '@/lib/ifc-handoff'
+import {
+  createIfcOnLoad,
+  readGeoHandoffUrl,
+  readIfcHandoffUrl,
+  readProjectHandoffId,
+} from '@/lib/ifc-handoff'
+
+// Merkt sich die zuletzt geöffnete Plixa-Projekt-ID. Kommt beim erneuten
+// „Gestalten" dieselbe `&project=`-ID an, setzt der Editor die gespeicherte
+// Bearbeitung fort (statt neu aus `geo` zu bauen).
+const LAST_PROJECT_KEY = 'plixa-last-project'
 
 // The open-source editor only ships the built-in catalog (no uploaded items),
 // so the Library/Community/Mine source chips and tag filters add nothing —
@@ -104,22 +114,41 @@ export default function Home() {
   // Weg B: exakte Plixa-Geometrie als GLB (`&geo=`) — falls vorhanden, ist sie
   // die angezeigte Geometrie; die IFC liefert die editierbaren Knoten.
   const [geoUrl] = useState<string | null>(() => readGeoHandoffUrl())
+  // Stabile Plixa-Projekt-ID (`&project=`). Gleich wie beim letzten Öffnen →
+  // Bearbeitung fortsetzen; neu/anders → frisch aus `geo` bauen.
+  const [projectHandoffId] = useState<string | null>(() => readProjectHandoffId())
+  const [continueSession] = useState<boolean>(() => {
+    if (typeof window === 'undefined' || !projectHandoffId) return false
+    return window.localStorage.getItem(LAST_PROJECT_KEY) === projectHandoffId
+  })
+  // Dieses Projekt als zuletzt geöffnetes merken (für den nächsten „Gestalten"-Sprung).
+  useEffect(() => {
+    if (projectHandoffId && typeof window !== 'undefined') {
+      window.localStorage.setItem(LAST_PROJECT_KEY, projectHandoffId)
+    }
+  }, [projectHandoffId])
   const [importProgress, setImportProgress] = useState<{ message: string; percent: number } | null>(
     null,
   )
   const [importError, setImportError] = useState<string | null>(null)
-  const onLoad = useMemo(
-    () =>
-      ifcUrl
-        ? createIfcOnLoad(
-            ifcUrl,
-            geoUrl,
-            (message, percent) => setImportProgress({ message, percent }),
-            (message) => setImportError(message),
-          )
-        : undefined,
-    [ifcUrl, geoUrl],
-  )
+  const onLoad = useMemo(() => {
+    if (!ifcUrl) return undefined
+    const build = createIfcOnLoad(
+      ifcUrl,
+      geoUrl,
+      (message, percent) => setImportProgress({ message, percent }),
+      (message) => setImportError(message),
+    )
+    // Weiterarbeiten: gleiches Projekt wie zuletzt → die gespeicherte Szene
+    // (deine Bearbeitung) wiederherstellen, sonst frisch aus `geo` bauen. Fehlt
+    // eine gültige gespeicherte Szene, fällt es sauber auf den Neuaufbau zurück.
+    if (!continueSession) return build
+    return async () => {
+      const saved = loadSceneFromLocalStorage()
+      if (saved && (saved.rootNodeIds?.length ?? 0) > 0) return saved
+      return build()
+    }
+  }, [ifcUrl, geoUrl, continueSession])
 
   return (
     <div className="relative h-screen w-screen">
