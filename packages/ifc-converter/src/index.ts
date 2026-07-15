@@ -1916,184 +1916,190 @@ export async function convertIfcToPascal(
   //
   // Pascal has no "arbitrary tilted plate" node — its roof is PARAMETRIC
   // (RoofNode → RoofSegmentNode with a shape + pitch). Plixa's IFC ships the
-  // roof as tilted IfcRoof plates (2 planes for a saddle roof, one for a
-  // mono-pitch, none for flat); mapping each to its own node produced empty
-  // RoofNodes that rendered nothing (the "Dach fehlt" bug). Instead we
-  // reconstruct ONE parametric roof and seat it on the top storey's walls. The
-  // TYPE, pitch, and direction come from the plates' real 3D slope, read from
-  // the tessellated mesh (the tilt lives in the IfcRoof geometry, which is often
-  // Brep/mapped and unreadable as a flat extrusion). Footprint and eave height
-  // come from the already-built walls/levels (clean node space).
+  // roof as many small tilted IfcRoof plates. We reconstruct a parametric roof
+  // per distinct roof SURFACE: plates are clustered into groups (ground overlap
+  // + overlapping height range), which keeps a gable's two slopes together but
+  // splits a stepped roof whose parts sit at different heights (e.g. a house
+  // plus a lower extension) so each surface gets its own eave / pitch / slope
+  // instead of one averaged plane. TYPE, pitch and direction come from each
+  // group's plates; footprint and eave come from the plates' own mesh geometry.
   const roofIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCROOF)
   if (roofIds.size() > 0) {
-    // Read every roof plate's world box (mesh frame: Y up, ground on X/Z) plus
-    // its module name (carries the pitch for the actual roof panels).
-    const modules = [] as {
+    type RMod = {
       cx: number
       cz: number
       cy: number
       dx: number
       dz: number
       height: number
+      botY: number
+      topY: number
       name: string
-    }[]
+    }
+    const modules: RMod[] = []
     for (let i = 0; i < roofIds.size(); i++) {
       const box = getRoofModuleBox(ifcApi, modelID, roofIds.get(i))
       if (box) {
         const name = String(ifcApi.GetLine(modelID, roofIds.get(i)).Name?.value ?? '')
-        modules.push({ ...box, name })
+        modules.push({
+          ...box,
+          botY: box.cy - box.height / 2,
+          topY: box.cy + box.height / 2,
+          name,
+        })
       }
     }
 
-    // Separate the big roof panels from the thin verge/eave trims by ground
-    // footprint — the panels carry the slope; the trims only garnish the edges.
-    const maxFoot = modules.reduce((m, b) => Math.max(m, b.dx * b.dz), 0)
-    const mains = modules.filter((b) => b.dx * b.dz >= 0.5 * maxFoot)
-
-    // Slope run axis = the ground axis a panel spans furthest along; the ridge
-    // (for a gable) runs perpendicular, along the side-by-side direction.
-    const runAlongZ = median(mains.map((b) => b.dz)) >= median(mains.map((b) => b.dx))
-    const runOf = (b: (typeof modules)[number]) => (runAlongZ ? b.cz : b.cx)
-    const runLen = runAlongZ ? median(mains.map((b) => b.dz)) : median(mains.map((b) => b.dx))
-
-    // A panel is tilted when its vertical extent exceeds a flat slab's thickness
-    // (a flat roof panel is ~0.3–0.5 m thick; a pitched one rises well beyond).
-    const FLAT_PANEL_THICKNESS = 0.6
-    const tilted = mains.filter((b) => b.height > FLAT_PANEL_THICKNESS)
-
-    // Count the distinct runs of tilted panels along the slope axis. One run =
-    // mono-pitch (shed / Pultdach); two opposing runs meeting at a ridge = gable
-    // (Satteldach); no tilted panels = flat (Flachdach). This is exactly the
-    // user's rule: one sloped face → Pultdach, two opposing → Satteldach.
-    let runClusters = 0
-    if (tilted.length > 0) {
-      const centers = tilted.map(runOf).sort((a, b) => a - b)
-      const tol = Math.max(0.5, 0.5 * runLen)
-      runClusters = 1
-      for (let i = 1; i < centers.length; i++) {
-        if (centers[i]! - centers[i - 1]! > tol) runClusters++
+    // Cluster modules into distinct roof surfaces. Two plates join when their
+    // ground footprints touch AND their vertical ranges overlap: a gable's two
+    // slopes share a ridge (overlapping height) → one surface; a stepped roof's
+    // parts sit at different heights (no vertical overlap) → separate surfaces.
+    const N = modules.length
+    const parent = Array.from({ length: N }, (_, i) => i)
+    const find = (i: number): number => {
+      let r = i
+      while (parent[r] !== r) r = parent[r]!
+      let c = i
+      while (parent[c] !== r) {
+        const next = parent[c]!
+        parent[c] = r
+        c = next
       }
+      return r
     }
-    const roofKind: 'flat' | 'shed' | 'gable' =
-      tilted.length === 0 ? 'flat' : runClusters <= 1 ? 'shed' : 'gable'
-
-    // Pitch: the Skylark roof-panel name carries it, but the exact format varies
-    // by system — 250: "…_ROOF_M42" / "…_ROOF_M10"; 200: "…_ROOF_42_XXS";
-    // 150: "…R-XXS-42". Strip the "SKYLARK<nnn>" prefix (so the 150/200/250 in
-    // the family name isn't mistaken for the pitch) and take the first 1–2 digit
-    // token. Read only the tilted PANELS' names (gable-end walls also ship as
-    // IfcRoof and carry a "…G42…" tag that would mislead). Fall back to a
-    // geometry estimate (rise over run), then a sane default. Flat roofs are 0°.
-    let pitchDeg = 0
-    if (roofKind !== 'flat') {
-      for (const b of tilted) {
-        const rest = b.name.replace(/^SKYLARK\s*\d+[ _-]*/i, '')
-        const m = rest.match(/(\d{1,2})(?!\d)/) ?? rest.match(/(\d{1,2})\s*°/)
-        const deg = m ? Number(m[1]) : Number.NaN
-        if (Number.isFinite(deg) && deg >= 3 && deg <= 80) {
-          pitchDeg = deg
-          break
+    const gx0 = (m: RMod) => m.cx - m.dx / 2
+    const gx1 = (m: RMod) => m.cx + m.dx / 2
+    const gz0 = (m: RMod) => m.cz - m.dz / 2
+    const gz1 = (m: RMod) => m.cz + m.dz / 2
+    const GAP = 0.25
+    const VTOL = 0.3
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        const a = modules[i]!
+        const b = modules[j]!
+        const groundTouch =
+          gx0(a) <= gx1(b) + GAP &&
+          gx0(b) <= gx1(a) + GAP &&
+          gz0(a) <= gz1(b) + GAP &&
+          gz0(b) <= gz1(a) + GAP
+        const vertOverlap = Math.max(a.botY, b.botY) <= Math.min(a.topY, b.topY) + VTOL
+        if (groundTouch && vertOverlap) {
+          const ra = find(i)
+          const rb = find(j)
+          if (ra !== rb) parent[rb] = ra
         }
       }
-      if (pitchDeg === 0 && tilted.length > 0) {
-        // rise ≈ panel vertical extent minus slab thickness; run = one slope's
-        // span (a gable panel spans half the roof, a shed the whole run).
-        const rise = Math.max(0.05, median(tilted.map((b) => b.height)) - 0.3)
-        const est = (Math.atan2(rise, Math.max(0.5, runLen)) * 180) / Math.PI
-        pitchDeg = Math.min(80, Math.max(5, est))
+    }
+    const groupsMap = new Map<number, RMod[]>()
+    for (let i = 0; i < N; i++) {
+      const r = find(i)
+      const g = groupsMap.get(r)
+      if (g) g.push(modules[i]!)
+      else groupsMap.set(r, [modules[i]!])
+    }
+    const groups = [...groupsMap.values()]
+
+    const [ox, oy, oz] = [originOffset[0] ?? 0, originOffset[1] ?? 0, originOffset[2] ?? 0]
+    const toSc0 = (mx: number) => (mx - ox) * unitFactor
+    const toSc1 = (mz: number) => (mz + oy) * unitFactor
+    const toElev = (my: number) => (my - oz) * unitFactor
+    const buildingNode = Object.values(nodes).find((node) => node.type === 'building')
+    const anyLevel = Object.values(nodes).find((node) => node.type === 'level')
+    const roofParentId = buildingNode?.id ?? anyLevel?.id ?? null
+
+    // Build one parametric roof for a plate group. Returns the segment id (or
+    // null) so the caller can host skylights that fall on it.
+    const buildRoofForGroup = (group: RMod[]): { segId: string; footprint: number[] } | null => {
+      const maxFoot = group.reduce((m, b) => Math.max(m, b.dx * b.dz), 0)
+      if (maxFoot <= 0) return null
+      const mains = group.filter((b) => b.dx * b.dz >= 0.5 * maxFoot)
+      if (mains.length === 0) return null
+      const tilted = mains.filter((b) => b.height > 0.6)
+
+      const runAlongZ = median(mains.map((b) => b.dz)) >= median(mains.map((b) => b.dx))
+      const runOf = (b: RMod) => (runAlongZ ? b.cz : b.cx)
+      const runLen = runAlongZ ? median(mains.map((b) => b.dz)) : median(mains.map((b) => b.dx))
+
+      let runClusters = 0
+      if (tilted.length > 0) {
+        const centers = tilted.map(runOf).sort((a, b) => a - b)
+        const tol = Math.max(0.5, 0.5 * runLen)
+        runClusters = 1
+        for (let i = 1; i < centers.length; i++) {
+          if (centers[i]! - centers[i - 1]! > tol) runClusters++
+        }
       }
-    }
+      const roofKind: 'flat' | 'shed' | 'gable' =
+        tilted.length === 0 ? 'flat' : runClusters <= 1 ? 'shed' : 'gable'
 
-    // Slope direction in the mesh ground plane. For a shed the roof descends
-    // along the run axis — recover which way from the height field: fit the panel
-    // + trim centroids' height against run position; downhill = decreasing
-    // height. For a gable the two slopes cancel (flat fit) so we just use the run
-    // axis (its sign is irrelevant for the symmetric shape).
-    let n = 0
-    let sr = 0
-    let sh = 0
-    let srr = 0
-    let srh = 0
-    for (const b of modules) {
-      const r = runOf(b)
-      n++
-      sr += r
-      sh += b.cy
-      srr += r * r
-      srh += r * b.cy
-    }
-    const denom = n * srr - sr * sr
-    const grad = Math.abs(denom) > 1e-6 ? (n * srh - sr * sh) / denom : 0
-    // Downhill unit vector along the run axis in mesh ground (0 across it).
-    const runSign = roofKind === 'shed' ? (grad >= 0 ? -1 : 1) : 1
-    const meshDownX = runAlongZ ? 0 : runSign
-    const meshDownZ = runAlongZ ? runSign : 0
-    // Map mesh ground → scene ground direction: sc0 ∝ meshX, sc1 ∝ +meshZ
-    // (scene ground axis 1 = world_z = meshZ after the Z→−Y un-mirror).
-    const primDx = meshDownX
-    const primDy = meshDownZ
-
-    console.log(
-      `[IFC→Pascal] Roof: kind=${roofKind} runs=${runClusters} tiltedPanels=${tilted.length}/${mains.length} pitch=${pitchDeg.toFixed(0)}°`,
-    )
-
-    // Footprint + eave height from the reconstructed walls/levels.
-    const wallNodes = Object.values(nodes).filter((n) => n.type === 'wall') as WallNode[]
-    const levelNodes = Object.values(nodes).filter((n) => n.type === 'level') as LevelNode[]
-    let minX = Infinity
-    let maxX = -Infinity
-    let minZ = Infinity
-    let maxZ = -Infinity
-    for (const w of wallNodes) {
-      for (const pt of [w.start, w.end]) {
-        if (!pt) continue
-        minX = Math.min(minX, pt[0])
-        maxX = Math.max(maxX, pt[0])
-        minZ = Math.min(minZ, pt[1])
-        maxZ = Math.max(maxZ, pt[1])
+      // Pitch from the Skylark panel name (…_ROOF_M42 / _M10 / _42_XXS /
+      // R-XXS-42), stripping the SKYLARK<nnn> family prefix; else a rise/run
+      // estimate; flat → 0.
+      let pitchDeg = 0
+      if (roofKind !== 'flat') {
+        for (const b of tilted) {
+          // Strip the SKYLARK<nnn> family number wherever it appears (the name
+          // may be prefixed, e.g. "Anbau - SKYLARK250_ROOF_M10") so the 150/200/
+          // 250 isn't mistaken for the pitch.
+          const rest = b.name.replace(/SKYLARK\s*\d+/gi, '')
+          const m = rest.match(/(\d{1,2})(?!\d)/) ?? rest.match(/(\d{1,2})\s*°/)
+          const deg = m ? Number(m[1]) : Number.NaN
+          if (Number.isFinite(deg) && deg >= 3 && deg <= 80) {
+            pitchDeg = deg
+            break
+          }
+        }
+        if (pitchDeg === 0) {
+          const rise = Math.max(0.05, median(tilted.map((b) => b.height)) - 0.3)
+          pitchDeg = Math.min(
+            80,
+            Math.max(5, (Math.atan2(rise, Math.max(0.5, runLen)) * 180) / Math.PI),
+          )
+        }
       }
-    }
 
-    const hasFootprint = Number.isFinite(minX) && maxX > minX && maxZ > minZ
-    if (hasFootprint) {
+      // Shed downhill along the run axis: fit this group's plate heights against
+      // run position; downhill = decreasing height. A gable's slopes cancel.
+      let cnt = 0
+      let sr = 0
+      let sh = 0
+      let srr = 0
+      let srh = 0
+      for (const b of group) {
+        const r = runOf(b)
+        cnt++
+        sr += r
+        sh += b.cy
+        srr += r * r
+        srh += r * b.cy
+      }
+      const denom = cnt * srr - sr * sr
+      const grad = Math.abs(denom) > 1e-6 ? (cnt * srh - sr * sh) / denom : 0
+      const runSign = roofKind === 'shed' ? (grad >= 0 ? -1 : 1) : 1
+      // mesh ground → scene ground: sc0 ∝ meshX, sc1 ∝ +meshZ.
+      const slopeX = roofKind === 'flat' ? 0 : runAlongZ ? 0 : runSign
+      const slopeY = roofKind === 'flat' ? 1 : runAlongZ ? runSign : 0
+
+      // Footprint from ALL plates in the group (scene frame) — including the
+      // verge/eave trims and gable-end pieces, so the roof reaches the walls
+      // instead of stopping at the main panels' edges. Eave from the group.
+      const xs = group.flatMap((b) => [toSc0(gx0(b)), toSc0(gx1(b))])
+      const zs = group.flatMap((b) => [toSc1(gz0(b)), toSc1(gz1(b))])
+      const minX = Math.min(...xs)
+      const maxX = Math.max(...xs)
+      const minZ = Math.min(...zs)
+      const maxZ = Math.max(...zs)
+      if (!(maxX > minX && maxZ > minZ)) return null
       const spanX = maxX - minX
       const spanZ = maxZ - minZ
       const centerX = (minX + maxX) / 2
       const centerZ = (minZ + maxZ) / 2
+      // Eave = the surface's low edge = the lowest plate bottom in the group.
+      const eaveY = toElev(Math.min(...group.map((b) => b.botY)))
 
-      // Eave = top of the highest storey's walls.
-      const levelElevation = (l: LevelNode): number =>
-        (l as { elevation?: number }).elevation ??
-        (meta(l).elevation as number | undefined) ??
-        0
-      const topLevel = levelNodes.reduce<LevelNode | null>(
-        (best, l) => (best && levelElevation(best) >= levelElevation(l) ? best : l),
-        null,
-      )
-      const topElev = topLevel ? levelElevation(topLevel) : 0
-      const topLevelId = topLevel?.id
-      const topWallHeights = wallNodes
-        .filter((w) => (!topLevelId || w.parentId === topLevelId) && (w.height ?? 0) > 0.5)
-        .map((w) => w.height ?? 0)
-      const topWallHeight = topWallHeights.length
-        ? Math.max(...topWallHeights)
-        : DEFAULT_WALL_HEIGHT
-      const eaveY = topElev + topWallHeight
-
-      // The segment slopes across its local Z (`depth`); at rotation 0 that's the
-      // scene ground axis 1. Orient so the slope axis follows the measured
-      // downhill: a shed descends along it, a gable's ridge runs perpendicular to
-      // it (symmetric, so the sign doesn't matter), a flat roof any orientation.
-      // `rotation` (Y) turns local Z onto the slope axis; a shed also flips 180°
-      // so the low eave lands on the correct side.
-      const slopeX = roofKind === 'flat' ? 0 : primDx
-      const slopeY = roofKind === 'flat' ? 1 : primDy
       const slopeAlongX = Math.abs(slopeX) >= Math.abs(slopeY)
       const depth = slopeAlongX ? spanX : spanZ
       const width = slopeAlongX ? spanZ : spanX
-      // Local Z (default slope axis) points along +ground-axis-1. Rotate it onto
-      // the measured slope axis. For a shed, also flip 180° when the downhill
-      // points the opposite way so the low eave is on the correct side.
       let rotation = slopeAlongX ? Math.PI / 2 : 0
       if (roofKind === 'shed') {
         const facing = slopeAlongX ? slopeX : slopeY
@@ -2102,17 +2108,14 @@ export async function convertIfcToPascal(
 
       const roofId = generateId('roof')
       const segId = generateId('rseg')
-
-      const buildingNode = Object.values(nodes).find((n) => n.type === 'building')
-      const parentNodeId = buildingNode?.id ?? topLevelId ?? null
-
-      const roofName = roofKind === 'shed' ? 'Pultdach' : roofKind === 'flat' ? 'Flachdach' : 'Dach'
+      const roofName =
+        roofKind === 'shed' ? 'Pultdach' : roofKind === 'flat' ? 'Flachdach' : 'Dach'
       const roofNode = tryParse(RoofNode, 'roof', {
         object: 'node',
         id: roofId,
         type: 'roof',
         name: roofName,
-        parentId: parentNodeId,
+        parentId: roofParentId,
         visible: true,
         position: [centerX, eaveY, centerZ],
         rotation,
@@ -2134,52 +2137,62 @@ export async function convertIfcToPascal(
         pitch: roofKind === 'flat' ? 0 : pitchDeg,
         wallHeight: 0,
       })
-
       console.log(
-        `[IFC→Pascal] Roof: ${roofKind} (pitch=${pitchDeg.toFixed(0)}°, w=${width.toFixed(2)}, d=${depth.toFixed(2)})`,
+        `[IFC→Pascal] Roof surface: ${roofKind} (pitch=${pitchDeg.toFixed(0)}°, w=${width.toFixed(2)}, d=${depth.toFixed(2)}, eave=${eaveY.toFixed(2)})`,
       )
-
       nodes[roofId] = roofNode
       nodes[segId] = segNode
-      if (parentNodeId && nodes[parentNodeId]) {
-        ;(nodes[parentNodeId] as { children?: string[] }).children?.push(roofId)
+      if (roofParentId && nodes[roofParentId]) {
+        ;(nodes[roofParentId] as { children?: string[] }).children?.push(roofId)
       }
+      return roofKind === 'flat' ? null : { segId, footprint: [minX, minZ, maxX, maxZ] }
+    }
 
-      // Dachfenster: rebuild each collected skylight as a Pascal SkylightNode
-      // hosted on this segment. The segment sits at world [centerX, eaveY,
-      // centerZ] rotated `rotation` about Y; its local frame is X along the
-      // ridge, Z across the slope. Map each skylight's world ground position
-      // into that frame — the renderer then projects it onto the sloped surface
-      // (position[0] = along-ridge, position[2] = across-slope). Skipped for
-      // flat roofs (Plixa only places skylights on pitched roofs).
-      if (roofKind !== 'flat') {
-        const cos = Math.cos(rotation)
-        const sin = Math.sin(rotation)
-        for (const s of skylightHints) {
-          const relX = s.sx - centerX
-          const relZ = s.sz - centerZ
-          // Inverse Y-rotation (world → segment-local).
-          const lx = relX * cos - relZ * sin
-          const lz = relX * sin + relZ * cos
-          const skyId = generateId('skylight')
-          const skyNode = tryParse(SkylightNode, 'skylight', {
-            object: 'node',
-            id: skyId,
-            type: 'skylight',
-            name: 'Dachfenster',
-            parentId: segId,
-            visible: true,
-            roofSegmentId: segId,
-            position: [lx, 0, lz],
-            rotation: 0,
-            width: s.width,
-            height: s.height,
-            skylightType: 'opening',
-          })
-          nodes[skyId] = skyNode
-          ;(nodes[segId] as { children?: string[] }).children?.push(skyId)
-        }
-      }
+    const built = groups.map(buildRoofForGroup).filter(Boolean) as {
+      segId: string
+      footprint: number[]
+    }[]
+
+    // Dachfenster: host each collected skylight on the pitched roof surface whose
+    // footprint contains it (map its world ground position into that segment's
+    // local frame; the renderer projects it onto the slope).
+    for (const s of skylightHints) {
+      const target = built.find(
+        (r) =>
+          s.sx >= r.footprint[0]! - 0.3 &&
+          s.sx <= r.footprint[2]! + 0.3 &&
+          s.sz >= r.footprint[1]! - 0.3 &&
+          s.sz <= r.footprint[3]! + 0.3,
+      )
+      const seg = target ? (nodes[target.segId] as RoofSegmentNode | undefined) : undefined
+      if (!target || !seg) continue
+      const roof = nodes[seg.parentId as string] as RoofNode | undefined
+      const centerX = roof?.position?.[0] ?? 0
+      const centerZ = roof?.position?.[2] ?? 0
+      const rot = roof?.rotation ?? 0
+      const cos = Math.cos(rot)
+      const sin = Math.sin(rot)
+      const relX = s.sx - centerX
+      const relZ = s.sz - centerZ
+      const lx = relX * cos - relZ * sin
+      const lz = relX * sin + relZ * cos
+      const skyId = generateId('skylight')
+      const skyNode = tryParse(SkylightNode, 'skylight', {
+        object: 'node',
+        id: skyId,
+        type: 'skylight',
+        name: 'Dachfenster',
+        parentId: target.segId,
+        visible: true,
+        roofSegmentId: target.segId,
+        position: [lx, 0, lz],
+        rotation: 0,
+        width: s.width,
+        height: s.height,
+        skylightType: 'opening',
+      })
+      nodes[skyId] = skyNode
+      ;(nodes[target.segId] as { children?: string[] }).children?.push(skyId)
     }
   }
 
