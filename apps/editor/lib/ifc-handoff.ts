@@ -27,7 +27,7 @@
  * über den normalen Lade-Lebenszyklus (`applySceneGraphToEditor`), es landet also
  * im gleichen Store, den der Editor rendert.
  */
-import { ItemNode, saveAsset } from '@pascal-app/core'
+import { ItemNode } from '@pascal-app/core'
 import type { SceneGraph } from '@pascal-app/editor'
 
 /** Liest die IFC-URL aus dem Query-String (nur im Browser). */
@@ -79,12 +79,15 @@ const GEOMETRY_NODE_TYPES = new Set([
  */
 async function fetchGeoGlb(geoUrl: string): Promise<ArrayBuffer> {
   try {
-    const direct = await fetch(geoUrl, { cache: 'no-store' })
+    // KEIN no-store: dieselbe URL lädt der Item-Renderer (useGLTF) gleich erneut;
+    // der Browser-HTTP-Cache bedient den zweiten Abruf, statt 57 MB doppelt zu ziehen.
+    const direct = await fetch(geoUrl)
     if (direct.ok) return await direct.arrayBuffer()
-  } catch {
-    // CORS/Netzfehler → Proxy-Fallback unten.
+    console.warn(`[plixa geo] Direkt-Abruf R2 nicht ok (HTTP ${direct.status}) → Proxy-Fallback`)
+  } catch (e) {
+    console.warn('[plixa geo] Direkt-Abruf R2 fehlgeschlagen (CORS/Netz) → Proxy-Fallback', e)
   }
-  const res = await fetch(`/api/ifc?u=${encodeURIComponent(geoUrl)}`, { cache: 'no-store' })
+  const res = await fetch(`/api/ifc?u=${encodeURIComponent(geoUrl)}`)
   if (!res.ok) throw new Error(`GLB-Download fehlgeschlagen (${res.status})`)
   return res.arrayBuffer()
 }
@@ -96,9 +99,11 @@ async function attachExactGeometry(
 ): Promise<void> {
   onProgress?.('Lade exakte Geometrie …', 92)
   const buf = await fetchGeoGlb(geoUrl)
+  console.info(`[plixa geo] GLB geladen: ${(buf.byteLength / 1e6).toFixed(1)} MB`)
 
-  // AABB des GLB bestimmen (Zentrierung + Grundriss-Maße). Der GLTFLoader und
-  // three werden dynamisch geladen (nur im Browser, nur bei Übergabe).
+  // AABB des GLB bestimmen (Zentrierung + Grundriss-Maße). GLTFLoader baut den
+  // Szenengraphen MIT allen Knoten-Matrizen (0,001-Scale + Meter-Position) — die
+  // Box3 misst also echte Weltmeter. GLTFLoader und three dynamisch laden.
   const [{ GLTFLoader }, three] = await Promise.all([
     import('three/examples/jsm/loaders/GLTFLoader.js'),
     import('three'),
@@ -111,9 +116,10 @@ async function attachExactGeometry(
   const center = new three.Vector3()
   box.getSize(size)
   box.getCenter(center)
-
-  const file = new File([buf], 'plixa-haus.glb', { type: 'model/gltf-binary' })
-  const assetUrl = await saveAsset(file)
+  console.info(
+    `[plixa geo] Bounding-Box (m): ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)}` +
+      ` — Zentrum [${center.x.toFixed(1)}, ${center.y.toFixed(1)}, ${center.z.toFixed(1)}]`,
+  )
 
   type Levelish = {
     type?: string
@@ -139,7 +145,12 @@ async function attachExactGeometry(
       category: 'building',
       name: 'Plixa Haus (exakt)',
       thumbnail: '',
-      src: assetUrl,
+      // Direkte R2-`https`-URL als Modellquelle — NICHT via saveAsset (asset://),
+      // denn der Item-Renderer lädt über `useGLTF(resolveCdnUrl(src))`, und
+      // resolveCdnUrl löst `asset://` NICHT auf → useGLTF bekäme keine ladbare URL
+      // und der Renderer fiele auf die Drahtgitter-Platzhalterbox zurück. Eine
+      // http(s)-URL reicht resolveCdnUrl durch; useGLTF lädt sie direkt von R2.
+      src: geoUrl,
       dimensions: [size.x, size.y, size.z],
     },
   })
