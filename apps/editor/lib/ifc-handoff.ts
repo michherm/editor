@@ -40,6 +40,16 @@ export function readGeoHandoffUrl(): string | null {
   return readParam('geo')
 }
 
+/**
+ * Liest die stabile Projekt-ID (`&project=<id>`). Plixa hängt sie über alle
+ * „Gestalten"-Aufrufe DESSELBEN Projekts unverändert an. Damit erkennt der
+ * Editor, ob er die gespeicherte Bearbeitung fortsetzt (gleiche ID wie zuletzt)
+ * oder ein neues Projekt frisch aus `geo` baut.
+ */
+export function readProjectHandoffId(): string | null {
+  return readParam('project')
+}
+
 function readParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get(name)
