@@ -71,15 +71,31 @@ const GEOMETRY_NODE_TYPES = new Set([
  * landen. Als Item ist die Sichtbarkeit an KEINEN Schalter gekoppelt (anders als
  * bei einer ScanNode) und der Maßstab ist nativ (scale [1,1,1]).
  */
+/**
+ * Lädt das exakte-Geometrie-GLB. PRIMÄR direkt von R2 (die öffentliche
+ * r2.dev-URL erlaubt GET-CORS für alle Origins) — das umgeht das Puffer-/
+ * Größenlimit des Same-Origin-Proxys `/api/ifc` bei großen Häusern. Nur wenn der
+ * Direktabruf scheitert (CORS/Netz), wird über den Proxy nachgeladen.
+ */
+async function fetchGeoGlb(geoUrl: string): Promise<ArrayBuffer> {
+  try {
+    const direct = await fetch(geoUrl, { cache: 'no-store' })
+    if (direct.ok) return await direct.arrayBuffer()
+  } catch {
+    // CORS/Netzfehler → Proxy-Fallback unten.
+  }
+  const res = await fetch(`/api/ifc?u=${encodeURIComponent(geoUrl)}`, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`GLB-Download fehlgeschlagen (${res.status})`)
+  return res.arrayBuffer()
+}
+
 async function attachExactGeometry(
   nodes: Record<string, unknown>,
   geoUrl: string,
   onProgress?: (message: string, percent: number) => void,
 ): Promise<void> {
   onProgress?.('Lade exakte Geometrie …', 92)
-  const res = await fetch(`/api/ifc?u=${encodeURIComponent(geoUrl)}`, { cache: 'no-store' })
-  if (!res.ok) throw new Error(`GLB-Download fehlgeschlagen (${res.status})`)
-  const buf = await res.arrayBuffer()
+  const buf = await fetchGeoGlb(geoUrl)
 
   // AABB des GLB bestimmen (Zentrierung + Grundriss-Maße). Der GLTFLoader und
   // three werden dynamisch geladen (nur im Browser, nur bei Übergabe).
