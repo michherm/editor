@@ -587,7 +587,7 @@ function measureWallLocalExtents(
 // in one run = mono-pitch (shed), in two opposing runs = gable, flat panels =
 // flat. web-ifc's mesh frame is Y-up with the ground on X/Z (unlike the
 // converter's Z-up scene), so we return the box in that frame; the caller maps
-// the slope axis to scene directions (sc0 ∝ meshX, sc1 ∝ -meshZ, elevation ∝
+// the slope axis to scene directions (sc0 ∝ meshX, sc1 ∝ +meshZ, elevation ∝
 // meshY). Returns null when the plate has no readable geometry.
 function getRoofModuleBox(
   ifcApi: WebIFC.IfcAPI,
@@ -721,8 +721,11 @@ function deriveWallBoxScene(
     if (!any) return null
     const [ox, oy, oz] = [originOffset[0] ?? 0, originOffset[1] ?? 0, originOffset[2] ?? 0]
     void oz
+    // Same scene mapping as worldToScene, incl. the Z→−Y un-mirror: web-ifc's
+    // mesh frame has meshZ = −IFC_y, and scene ground axis 1 = world_z = −IFC_y
+    // = meshZ, so sc1 = (meshZ + originOffset_y) · unitFactor.
     const sc0 = (mx: number): number => (mx - ox) * unitFactor
-    const sc1 = (mz: number): number => (-mz - oy) * unitFactor
+    const sc1 = (mz: number): number => (mz + oy) * unitFactor
     const spanX = mxx - mnx
     const spanZ = mxz - mnz
     const height = (mxy - mny) * unitFactor
@@ -902,9 +905,17 @@ export async function convertIfcToPascal(
   }
 
   function worldToScene(worldPt: number[]): number[] {
+    // Plixa's export encodes the ground plane as IFC_x = world_x and
+    // IFC_y = −world_z (a deliberate Z→−Y flip). Reading IFC_y straight through
+    // would negate the second ground axis and mirror the whole house
+    // left↔right. Invert it here so scene ground axis 1 = world_z, i.e. the
+    // editor stands 1:1 (not mirrored) to Plixa. Every downstream position
+    // (walls, openings, slabs, roof footprint) flows through this one mapping,
+    // so they all un-mirror together; the two mesh-based derivations
+    // (deriveWallBoxScene / the roof slope axis) apply the same sign.
     return [
       (worldPt[0] - originOffset[0]) * unitFactor,
-      (worldPt[1] - originOffset[1]) * unitFactor,
+      (originOffset[1] - worldPt[1]) * unitFactor,
       (worldPt[2] - originOffset[2]) * unitFactor,
     ]
   }
@@ -2017,9 +2028,10 @@ export async function convertIfcToPascal(
     const runSign = roofKind === 'shed' ? (grad >= 0 ? -1 : 1) : 1
     const meshDownX = runAlongZ ? 0 : runSign
     const meshDownZ = runAlongZ ? runSign : 0
-    // Map mesh ground → scene ground direction: sc0 ∝ meshX, sc1 ∝ -meshZ.
+    // Map mesh ground → scene ground direction: sc0 ∝ meshX, sc1 ∝ +meshZ
+    // (scene ground axis 1 = world_z = meshZ after the Z→−Y un-mirror).
     const primDx = meshDownX
-    const primDy = -meshDownZ
+    const primDy = meshDownZ
 
     console.log(
       `[IFC→Pascal] Roof: kind=${roofKind} runs=${runClusters} tiltedPanels=${tilted.length}/${mains.length} pitch=${pitchDeg.toFixed(0)}°`,
