@@ -47,6 +47,17 @@ const wrap: React.CSSProperties = {
   color: 'var(--foreground, #1a242e)',
 }
 
+// Anklickbare Beispiel-Prompts für den Leer-Zustand. Sie zeigen konkret, was die
+// KI HEUTE kann (Möbel platzieren, Fenster/Türen schneiden, Fragen zur Szene) —
+// bewusst noch KEIN Material/Tapete, das kommt erst mit dem Material-Werkzeug.
+// `de` ist der Default; via i18n-Schlüssel später übersetzbar.
+const STARTER_PROMPTS: { key: string; de: string }[] = [
+  { key: 'ai.starter.sofa', de: 'Stell ein Sofa in den größten Raum.' },
+  { key: 'ai.starter.window', de: 'Schneide ein Fenster in die Südwand.' },
+  { key: 'ai.starter.door', de: 'Füge eine Tür zwischen zwei Räumen ein.' },
+  { key: 'ai.starter.area', de: 'Wie viele Quadratmeter hat das Erdgeschoss?' },
+]
+
 export default function PlixaAiPanel() {
   const { t, i18n } = useTranslation()
   const [messages, setMessages] = useState<DisplayMessage[]>([])
@@ -116,8 +127,8 @@ export default function PlixaAiPanel() {
     scrollToBottom()
   }
 
-  const send = async () => {
-    const text = input.trim()
+  const send = async (preset?: string) => {
+    const text = (preset ?? input).trim()
     if (!text || running) return
     setError(null)
     setInput('')
@@ -214,8 +225,38 @@ export default function PlixaAiPanel() {
         style={{ flex: 1, overflowY: 'auto', padding: '4px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}
       >
         {messages.length === 0 && (
-          <div style={{ fontSize: 12, color: 'var(--muted-foreground, #8a95a0)', lineHeight: 1.5 }}>
-            {t('ai.example')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 12, color: 'var(--muted-foreground, #8a95a0)', lineHeight: 1.5 }}>
+              {t('ai.example')}
+            </div>
+            {/* Anklickbare Beispiele: ein Tipp startet die KI direkt. */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {STARTER_PROMPTS.map((p) => {
+                const label = t(p.key, { defaultValue: p.de })
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => void send(label)}
+                    disabled={running}
+                    style={{
+                      textAlign: 'left',
+                      padding: '6px 11px',
+                      borderRadius: 999,
+                      border: '1px solid var(--border, rgba(20,30,40,0.14))',
+                      background: 'var(--background, #fff)',
+                      color: 'var(--foreground, #1a242e)',
+                      fontSize: 12,
+                      lineHeight: 1.2,
+                      cursor: running ? 'default' : 'pointer',
+                      opacity: running ? 0.6 : 1,
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
         {messages.map((m, i) => (
