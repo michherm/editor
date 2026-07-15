@@ -659,6 +659,102 @@ function median(values: number[]): number {
   return s[Math.floor(s.length / 2)]!
 }
 
+// Derive a wall's exact axis, thickness and height straight from its
+// tessellated mesh, in the converter's SCENE frame. Plixa exports each wall as
+// a clean axis-aligned prefab module, but with no IfcShapeRepresentation 'Axis'
+// — and the swept-profile path guesses the axis as local-X, which is wrong for
+// walls running along local-Y (it swaps length↔thickness and points the wall
+// sideways). The mesh AABB has no such ambiguity: the longer horizontal extent
+// is the length (its direction the axis), the shorter is the thickness, the
+// vertical is the height. web-ifc's mesh frame is Y-up with the ground on X/Z;
+// map it to the scene the same way as the roof (sc0 = meshX, sc1 = -meshZ,
+// elevation = meshY), offset+scaled by the converter's origin/unit factor so it
+// lands in the exact same frame as walls placed via ObjectPlacement. Returns
+// null when the mesh is unreadable (caller keeps the profile/default path).
+function deriveWallBoxScene(
+  ifcApi: WebIFC.IfcAPI,
+  modelID: number,
+  expressID: number,
+  originOffset: number[],
+  unitFactor: number,
+): { start: [number, number]; end: [number, number]; thickness: number; height: number } | null {
+  let mesh: { geometries: { size: () => number; get: (i: number) => unknown }; delete?: () => void }
+  try {
+    mesh = ifcApi.GetFlatMesh(modelID, expressID) as never
+  } catch {
+    return null
+  }
+  try {
+    const geoms = mesh.geometries
+    let mnx = Infinity
+    let mxx = -Infinity
+    let mny = Infinity
+    let mxy = -Infinity
+    let mnz = Infinity
+    let mxz = -Infinity
+    let any = false
+    for (let g = 0; g < geoms.size(); g++) {
+      const pg = geoms.get(g) as { flatTransformation: number[]; geometryExpressID: number }
+      const m = pg.flatTransformation
+      const geo = ifcApi.GetGeometry(modelID, pg.geometryExpressID)
+      try {
+        const verts = ifcApi.GetVertexArray(geo.GetVertexData(), geo.GetVertexDataSize())
+        for (let v = 0; v + 2 < verts.length; v += 6) {
+          const x = verts[v]!
+          const y = verts[v + 1]!
+          const z = verts[v + 2]!
+          const wx = m[0]! * x + m[4]! * y + m[8]! * z + m[12]!
+          const wy = m[1]! * x + m[5]! * y + m[9]! * z + m[13]!
+          const wz = m[2]! * x + m[6]! * y + m[10]! * z + m[14]!
+          if (wx < mnx) mnx = wx
+          if (wx > mxx) mxx = wx
+          if (wy < mny) mny = wy
+          if (wy > mxy) mxy = wy
+          if (wz < mnz) mnz = wz
+          if (wz > mxz) mxz = wz
+          any = true
+        }
+      } finally {
+        ;(geo as unknown as { delete?: () => void }).delete?.()
+      }
+    }
+    if (!any) return null
+    const [ox, oy, oz] = [originOffset[0] ?? 0, originOffset[1] ?? 0, originOffset[2] ?? 0]
+    void oz
+    const sc0 = (mx: number): number => (mx - ox) * unitFactor
+    const sc1 = (mz: number): number => (-mz - oy) * unitFactor
+    const spanX = mxx - mnx
+    const spanZ = mxz - mnz
+    const height = (mxy - mny) * unitFactor
+    // The axis-aligned box only equals the true wall when the wall runs along a
+    // world axis. A diagonal wall's AABB conflates length and thickness, so its
+    // shorter span balloons past any real wall thickness — bail out and let the
+    // caller's profile/placement path handle it. (Plixa's modules are all
+    // axis-aligned, so this only guards non-Plixa IFCs.)
+    if (Math.min(spanX, spanZ) * unitFactor > 1.2) return null
+    if (spanX >= spanZ) {
+      const cz = (mnz + mxz) / 2
+      return {
+        start: [sc0(mnx), sc1(cz)],
+        end: [sc0(mxx), sc1(cz)],
+        thickness: spanZ * unitFactor,
+        height,
+      }
+    }
+    const cx = (mnx + mxx) / 2
+    return {
+      start: [sc0(cx), sc1(mnz)],
+      end: [sc0(cx), sc1(mxz)],
+      thickness: spanX * unitFactor,
+      height,
+    }
+  } catch {
+    return null
+  } finally {
+    mesh.delete?.()
+  }
+}
+
 // Resolve wall height + thickness from the wall-frame extents. The along
 // extent must match the wall's already-known length (within tolerance)
 // for the measurement to be trusted — that gate confirms both the unit
@@ -1083,47 +1179,62 @@ export async function convertIfcToPascal(
         // Try to get axis polyline (local 2D line along wall)
         const axisPts = getAxisPolyline(ifcApi, modelID, wall)
 
+        // No 'Axis' representation (Plixa's case): take the exact axis,
+        // thickness and height from the mesh AABB — the swept-profile guess
+        // below assumes the axis is local-X, which mis-orients walls that run
+        // along local-Y. With a clean mesh box we skip that guess entirely.
+        const meshBox =
+          axisPts && axisPts.length >= 2
+            ? null
+            : deriveWallBoxScene(ifcApi, modelID, wallExpressID, originOffset, unitFactor)
+
         if (axisPts && axisPts.length >= 2) {
           const s0 = worldToScene(transformPoint3(worldMat, axisPts[0]))
           const s1 = worldToScene(transformPoint3(worldMat, axisPts[axisPts.length - 1]))
           start = [s0[0], s0[1]]
           end = [s1[0], s1[1]]
+        } else if (meshBox) {
+          start = meshBox.start
+          end = meshBox.end
+          thickness = meshBox.thickness
+          height = meshBox.height
         } else {
-          // Fallback: use placement origin + body XDim for length
+          // Last resort: placement origin + body XDim for length.
           const s = worldToScene(transformPoint3(worldMat, [0, 0, 0]))
           start = [s[0], s[1]]
-          // Will try to get length from body below
         }
 
-        // Get body extrusion data for thickness/height
-        const body = getBodyExtrusionData(ifcApi, modelID, wall)
+        if (!meshBox) {
+          // Get body extrusion data for thickness/height
+          const body = getBodyExtrusionData(ifcApi, modelID, wall)
 
-        if (body.depth) {
-          if (opts.extrusionDepthIsHeight) {
-            height = body.depth * unitFactor
-          } else {
-            thickness = body.depth * unitFactor
+          if (body.depth) {
+            if (opts.extrusionDepthIsHeight) {
+              height = body.depth * unitFactor
+            } else {
+              thickness = body.depth * unitFactor
+            }
           }
-        }
 
-        const dimForThickness = opts.swapProfileDimensions ? body.xDim : body.yDim
-        if (dimForThickness) {
-          thickness = dimForThickness * unitFactor
-        } else if (body.profilePoints && body.profilePoints.length >= 3) {
-          const ys = body.profilePoints.map((p) => p[1])
-          thickness = (Math.max(...ys) - Math.min(...ys)) * unitFactor
-        }
-
-        // If no axis polyline, derive wall length from profile or XDim
-        if (!axisPts) {
-          let wallLength = body.xDim
-          if (!wallLength && body.profilePoints && body.profilePoints.length >= 3) {
-            const xs = body.profilePoints.map((p) => p[0])
-            wallLength = Math.max(...xs) - Math.min(...xs)
+          const dimForThickness = opts.swapProfileDimensions ? body.xDim : body.yDim
+          if (dimForThickness) {
+            thickness = dimForThickness * unitFactor
+          } else if (body.profilePoints && body.profilePoints.length >= 3) {
+            const ys = body.profilePoints.map((p) => p[1])
+            thickness = (Math.max(...ys) - Math.min(...ys)) * unitFactor
           }
-          if (wallLength) {
-            const se = worldToScene(transformPoint3(worldMat, [wallLength, 0, 0]))
-            end = [se[0], se[1]]
+
+          // If no axis polyline, derive wall length from profile or XDim
+          if (!axisPts) {
+            let wallLength = body.xDim
+            if (!wallLength && body.profilePoints && body.profilePoints.length >= 3) {
+              const xs = body.profilePoints.map((p) => p[0])
+              wallLength = Math.max(...xs) - Math.min(...xs)
+            }
+            if (wallLength) {
+              const se = worldToScene(transformPoint3(worldMat, [wallLength, 0, 0]))
+              end = [se[0], se[1]]
+            }
           }
         }
       } catch {
@@ -1372,6 +1483,7 @@ export async function convertIfcToPascal(
     end: [number, number]
     length: number
     baseY: number
+    height: number
   }
   const wallInfos: WallInfo[] = []
   for (const [wallExpressId, wallNodeId] of expressIdToNodeId) {
@@ -1380,54 +1492,92 @@ export async function convertIfcToPascal(
     const w = node as WallNode
     const length = Math.hypot(w.end[0] - w.start[0], w.end[1] - w.start[1])
     if (length < 1e-6) continue
+    // A window's sill is measured from where Pascal DRAWS the wall base — the
+    // parent level's floor — not from the wall's IFC placement Z. Plixa seats
+    // its wall modules on a low base band (placement Z ≈ 0.38), but Pascal has
+    // no wall Z offset: the wall sits on the level. Using the level elevation
+    // keeps the opening at the same world height as in Plixa.
     let baseY = 0
-    try {
-      const wall = ifcApi.GetLine(modelID, wallExpressId)
-      if (wall.ObjectPlacement?.value) {
-        const m = resolveWorldTransform(ifcApi, modelID, wall.ObjectPlacement.value)
-        baseY = worldToScene(transformPoint3(m, [0, 0, 0]))[2]
+    const levelNode = w.parentId ? nodes[w.parentId] : undefined
+    if (levelNode?.type === 'level') {
+      baseY =
+        (levelNode as { elevation?: number }).elevation ??
+        (meta(levelNode).elevation as number | undefined) ??
+        0
+    } else {
+      try {
+        const wall = ifcApi.GetLine(modelID, wallExpressId)
+        if (wall.ObjectPlacement?.value) {
+          const m = resolveWorldTransform(ifcApi, modelID, wall.ObjectPlacement.value)
+          baseY = worldToScene(transformPoint3(m, [0, 0, 0]))[2]
+        }
+      } catch {
+        /* keep baseY = 0 */
       }
-    } catch {
-      /* keep baseY = 0 */
     }
-    wallInfos.push({ nodeId: wallNodeId, start: w.start, end: w.end, length, baseY })
+    wallInfos.push({
+      nodeId: wallNodeId,
+      start: w.start,
+      end: w.end,
+      length,
+      baseY,
+      height: w.height ?? 0,
+    })
   }
 
-  // Pick the host wall for an opening at ground-plane point [x, y] with
-  // the given width. Among walls within HOST_WALL_MAX_DIST
-  // perpendicular, prefer one long enough to contain the opening — the
-  // castle's IFCWALL decomposition leaves tiny stub walls near corners,
-  // and a plain nearest-by-distance match would snap (say) a 0.7m door
-  // onto a 0.4m stub, so its CSG cutout overflows and breaks the wall.
-  // Returns the along-wall position already clamped so the opening
-  // footprint stays inside the wall.
-  const findHostWall = (x: number, y: number, width: number) => {
-    let best: { info: WallInfo; along: number; dist: number; fits: boolean } | null = null
+  // Host an opening at ground point [x, y] to the wall it actually sits on, and
+  // return its EXACT along/across offsets in that wall's local frame (along =
+  // signed distance from wall.start down the axis, across = signed perpendicular
+  // offset). Neither is clamped: the opening lands on a short prefab MODULE
+  // here, and the later wall-merge re-hosts it to the full wall by
+  // reconstructing its world position from these exact offsets. Selection:
+  // prefer walls whose foot falls WITHIN the segment (the opening truly overlays
+  // them), then the smallest perpendicular distance — so an opening never snaps
+  // onto a perpendicular corner post or a parallel wall on the far side. No
+  // "does it fit the width" test: every Plixa module is shorter than the
+  // opening, and that test used to push doors onto corner stubs.
+  const findHostWall = (x: number, y: number, _width: number) => {
+    let best: {
+      info: WallInfo
+      along: number
+      across: number
+      perp: number
+      onSeg: boolean
+    } | null = null
     for (const info of wallInfos) {
       const dx = info.end[0] - info.start[0]
       const dy = info.end[1] - info.start[1]
       const lenSq = dx * dx + dy * dy
       if (lenSq < 1e-9) continue
-      const t = Math.max(
-        0,
-        Math.min(1, ((x - info.start[0]) * dx + (y - info.start[1]) * dy) / lenSq),
-      )
-      const footX = info.start[0] + t * dx
-      const footY = info.start[1] + t * dy
-      const dist = Math.hypot(x - footX, y - footY)
-      if (dist > HOST_WALL_MAX_DIST) continue
-      // Keep the [along - width/2, along + width/2] span inside the wall.
-      const half = width / 2
-      const lo = Math.min(half, info.length / 2)
-      const hi = Math.max(info.length - half, info.length / 2)
-      const along = Math.max(lo, Math.min(hi, t * info.length))
-      const fits = info.length + 1e-6 >= width
-      const cand = { info, along, dist, fits }
+      const len = Math.sqrt(lenSq)
+      const ax = dx / len
+      const ay = dy / len
+      const relX = x - info.start[0]
+      const relY = y - info.start[1]
+      const along = relX * ax + relY * ay // unclamped, along the axis
+      const across = relX * -ay + relY * ax // signed perpendicular offset
+      const perp = Math.abs(across)
+      if (perp > HOST_WALL_MAX_DIST) continue
+      const onSeg = along >= -0.05 && along <= len + 0.05
+      const cand = { info, along, across, perp, onSeg }
       if (!best) {
         best = cand
-      } else if (cand.fits !== best.fits) {
-        if (cand.fits) best = cand
-      } else if (cand.dist < best.dist) {
+        continue
+      }
+      // Closest perpendicular wins (the opening lies against that face). When
+      // two walls share the same line (perp within a tolerance), prefer the
+      // TALLER wall — a window belongs to the full-height wall, never the
+      // knee-high base band that runs along the same line — and only then the
+      // wall the opening actually overlays. (Height beats on-segment because
+      // Plixa drops the real wall module exactly where the opening goes, so the
+      // continuous thing on that line is often the low band; the merge step
+      // later stitches the real wall's fragments across that hole.)
+      const perpTie = Math.abs(cand.perp - best.perp) <= 0.12
+      if (!perpTie) {
+        if (cand.perp < best.perp) best = cand
+      } else if (Math.abs(cand.info.height - best.info.height) > 0.2) {
+        if (cand.info.height > best.info.height) best = cand
+      } else if (cand.onSeg && !best.onSeg) {
         best = cand
       }
     }
@@ -1494,9 +1644,10 @@ export async function convertIfcToPascal(
           visible: true,
           width: width ?? 0.9,
           height: h,
-          // Placed by nearest-wall projection; [0,0,0] only when no wall
-          // is within range (then it sits on its spatial container).
-          position: hosted ? [hosted.along, h / 2, 0] : [0, 0, 0],
+          // Exact along-axis + across offsets from the element's own placement
+          // (position[1] = h/2, doors sit on the floor). [0,0,0] only when no
+          // wall is within range (then it sits on its spatial container).
+          position: hosted ? [hosted.along, h / 2, hosted.across] : [0, 0, 0],
           ...(hosted ? { wallId: hosted.info.nodeId } : {}),
           metadata: buildMetadata({
             ifcType: 'IFCDOOR',
@@ -1510,6 +1661,8 @@ export async function convertIfcToPascal(
         }
       } else {
         const h = height ?? 1.2
+        // Sill = the window's world elevation above its host wall's base — taken
+        // straight from the element placement, not zeroed.
         const sill = hosted && scene ? Math.max(0, scene[2] - hosted.info.baseY) : 0
         const nodeId = generateId('window')
         expressIdToNodeId.set(fillId, nodeId)
@@ -1522,7 +1675,7 @@ export async function convertIfcToPascal(
           visible: true,
           width: width ?? 1.0,
           height: h,
-          position: hosted ? [hosted.along, sill + h / 2, 0] : [0, 0, 0],
+          position: hosted ? [hosted.along, sill + h / 2, hosted.across] : [0, 0, 0],
           ...(hosted ? { wallId: hosted.info.nodeId } : {}),
           metadata: buildMetadata({
             ifcType: 'IFCWINDOW',

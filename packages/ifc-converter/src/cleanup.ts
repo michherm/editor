@@ -206,21 +206,48 @@ function wallHeightCompatible(a: WallSegment, b: WallSegment) {
   return Math.abs(a.height - b.height) <= WALL_HEIGHT_TOLERANCE
 }
 
-function wallIntervalsCompatible(a: WallSegment, b: WallSegment, maxJoinGap: number) {
+// The largest gap an opening may bridge. Two neighbouring openings (e.g. a
+// window next to a door) leave a continuous ~2.4 m hole; anything wider is
+// almost certainly two genuinely separate walls, so we stop there.
+const MAX_OPENING_BRIDGE_GAP = 3.0
+
+function wallIntervalsCompatible(
+  a: WallSegment,
+  b: WallSegment,
+  maxJoinGap: number,
+  openingTsOnLine: number[] | undefined,
+) {
   const gap = Math.max(a.t0, b.t0) - Math.min(a.t1, b.t1)
   if (gap <= maxJoinGap) return true
 
   const overlap = Math.min(a.t1, b.t1) - Math.max(a.t0, b.t0)
-  if (overlap <= 0) return false
-  return overlap / Math.min(a.length, b.length) >= 0.5
+  if (overlap > 0) return overlap / Math.min(a.length, b.length) >= 0.5
+
+  // No overlap and a gap wider than maxJoinGap: bridge it only if an opening
+  // sits IN the gap on this line. Plixa omits the wall module wherever a
+  // window/door goes, so the perimeter wall arrives as fragments separated by
+  // opening-sized holes — an opening in the hole proves the wall is continuous.
+  if (gap <= MAX_OPENING_BRIDGE_GAP && openingTsOnLine?.length) {
+    const lo = Math.min(a.t1, b.t1)
+    const hi = Math.max(a.t0, b.t0)
+    for (const t of openingTsOnLine) {
+      if (t > lo - 0.2 && t < hi + 0.2) return true
+    }
+  }
+  return false
 }
 
-function wallsCanMerge(a: WallSegment, b: WallSegment, maxJoinGap: number) {
+function wallsCanMerge(
+  a: WallSegment,
+  b: WallSegment,
+  maxJoinGap: number,
+  openingTsOnLine?: number[],
+) {
   if (a.parentId !== b.parentId) return false
   if (Math.abs(a.angleBucket - b.angleBucket) > 1) return false
   if (Math.abs(a.offset - b.offset) > wallLineTolerance(a, b)) return false
   if (!wallHeightCompatible(a, b)) return false
-  return wallIntervalsCompatible(a, b, maxJoinGap)
+  return wallIntervalsCompatible(a, b, maxJoinGap, openingTsOnLine)
 }
 
 function find(parent: number[], index: number): number {
@@ -409,6 +436,17 @@ function mergeWallFragments(
     .map(toWallSegment)
     .filter((segment): segment is WallSegment => segment !== null)
 
+  // World positions of every opening — used to bridge wall fragments across an
+  // opening-sized gap (the wall is continuous; Plixa just dropped the module
+  // where the window/door goes).
+  const openingWorld: [number, number][] = []
+  for (const node of Object.values(nodes)) {
+    if (!isOpeningNode(node)) continue
+    const wallId = getOpeningWallId(node, nodes)
+    const wall = wallId ? nodes[wallId] : undefined
+    if (wall?.type === 'wall') openingWorld.push(openingWorldPosition(node, wall))
+  }
+
   const groups = new Map<string, WallSegment[]>()
   for (const segment of segments) {
     const key = `${segment.parentId ?? 'root'}:${segment.angleBucket}`
@@ -423,7 +461,20 @@ function mergeWallFragments(
 
     for (let i = 0; i < group.length; i++) {
       for (let j = i + 1; j < group.length; j++) {
-        if (wallsCanMerge(group[i], group[j], options.maxWallJoinGap)) {
+        // Opening t-projections that lie on the shared line of this pair.
+        const ax = group[i].axisX
+        const ay = group[i].axisY
+        const nx = group[i].normalX
+        const ny = group[i].normalY
+        const lineOffset = (group[i].offset + group[j].offset) / 2
+        const tol = wallLineTolerance(group[i], group[j])
+        const openingTs: number[] = []
+        for (const [wx, wy] of openingWorld) {
+          if (Math.abs(wx * nx + wy * ny - lineOffset) <= tol + 0.05) {
+            openingTs.push(wx * ax + wy * ay)
+          }
+        }
+        if (wallsCanMerge(group[i], group[j], options.maxWallJoinGap, openingTs)) {
           union(parent, i, j)
         }
       }
