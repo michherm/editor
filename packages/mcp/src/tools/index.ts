@@ -21,6 +21,7 @@ import { registerRedo } from './redo'
 import { registerRoomTools } from './room-tools'
 import { registerSceneLifecycleTools } from './scene-lifecycle'
 import { registerSceneQueryTools } from './scene-query'
+import { registerListMaterials, registerSetSurfaceMaterial } from './set-material'
 import { registerSetZone } from './set-zone'
 import { registerTemplateTools } from './templates'
 import { registerUndo } from './undo'
@@ -49,6 +50,8 @@ export function registerTools(server: McpServer, operations: SceneOperations): v
   registerCreateWall(server, operations)
   registerPlaceItem(server, operations)
   registerCutOpening(server, operations)
+  registerListMaterials(server)
+  registerSetSurfaceMaterial(server, operations)
   registerSetZone(server, operations)
   registerDuplicateLevel(server, operations)
   registerDeleteNode(server, operations)
