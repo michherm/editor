@@ -41,19 +41,59 @@ export function readGeoHandoffUrl(): string | null {
 }
 
 /**
- * Liest die stabile Projekt-ID (`&project=<id>`). Plixa hängt sie über alle
- * „Gestalten"-Aufrufe DESSELBEN Projekts unverändert an. Damit erkennt der
- * Editor, ob er die gespeicherte Bearbeitung fortsetzt (gleiche ID wie zuletzt)
- * oder ein neues Projekt frisch aus `geo` baut.
+ * Liest die Fortsetzungs-URL (`&session=<https-url>`). NUR wenn Plixa diese
+ * explizit anhängt, setzt der Editor die zuvor gespeicherte Bearbeitung fort
+ * (er lädt den Szenenstand von genau dieser URL). Fehlt `session`, gewinnt IMMER
+ * die frische `ifc`/`geo`-Übergabe — ein eigener zwischengespeicherter Stand darf
+ * das frische Plixa-Haus dann NIE überschreiben. Nur `https` wird akzeptiert.
  */
-export function readProjectHandoffId(): string | null {
-  return readParam('project')
+export function readSessionHandoffUrl(): string | null {
+  const raw = readParam('session')
+  if (!raw) return null
+  try {
+    return new URL(raw).protocol === 'https:' ? raw : null
+  } catch {
+    return null
+  }
 }
 
 function readParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get(name)
   return value && value.trim() ? value.trim() : null
+}
+
+// Alle eigenen zwischengespeicherten Szenen-/Auswahl-Stände des Editors. Der
+// Szenen-Autosave (`pascal-editor-scene`) und die Auswahl (`pascal-editor-
+// selection[:projectId]`) sind genau das, was beim erneuten Öffnen fälschlich
+// das frische Haus überschreiben würde. `plixa-last-project` ist die veraltete
+// Projekt-ID-Marke aus dem früheren Fortsetzungs-Mechanismus.
+const STALE_SCENE_KEY_PREFIXES = ['pascal-editor-scene', 'pascal-editor-selection']
+const OBSOLETE_KEYS = ['plixa-last-project']
+
+/**
+ * Verwirft JEDEN eigenen zwischengespeicherten Szenenstand (localStorage), egal
+ * ob global, nach Projekt-ID oder nach geo-URL gekeyt. Wird beim frischen Aufbau
+ * aus `ifc`/`geo` aufgerufen, damit der interne Cache das frische Plixa-Haus NIE
+ * überschreibt. Bewusst KEIN Löschen der UI-Einstellungen (Sprache, Panels) —
+ * nur der Szenen-/Auswahl-Cache.
+ */
+export function discardEditorCache(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const toRemove: string[] = []
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i)
+      if (!key) continue
+      if (STALE_SCENE_KEY_PREFIXES.some((p) => key.startsWith(p)) || OBSOLETE_KEYS.includes(key)) {
+        toRemove.push(key)
+      }
+    }
+    for (const key of toRemove) window.localStorage.removeItem(key)
+  } catch {
+    // Storage nicht verfügbar (Privatmodus o. ä.) — dann gibt es auch keinen
+    // Cache, der gewinnen könnte.
+  }
 }
 
 // Knoten mit sichtbarer Geometrie: werden ausgeblendet, sobald die exakte
@@ -233,6 +273,60 @@ export function createIfcOnLoad(
       // Nutzer den genauen Grund sieht, statt eines stillen leeren Editors.
       const message = err instanceof Error ? err.message : String(err)
       console.error('[plixa handoff] IFC-Import fehlgeschlagen:', err)
+      onError?.(message)
+      throw err
+    }
+  }
+}
+
+/**
+ * Baut die `onLoad`-Funktion für die FORTSETZUNG (`&session=<https-url>`): lädt
+ * den zuvor gespeicherten Szenenstand (JSON-Szenengraph mit `nodes`/`rootNodeIds`)
+ * von genau dieser URL und stellt ihn wieder her. Das ist der EINZIGE Weg, auf dem
+ * ein gespeicherter Stand geladen wird — ohne gültige `session` gewinnt immer die
+ * frische `ifc`/`geo`-Übergabe.
+ *
+ * Primär direkt (die öffentliche R2-`https`-URL erlaubt GET-CORS); scheitert das
+ * (CORS/Netz), über den Same-Origin-Proxy `/api/ifc`.
+ */
+export function createSessionOnLoad(
+  sessionUrl: string,
+  onProgress?: (message: string, percent: number) => void,
+  onError?: (message: string) => void,
+): () => Promise<SceneGraph> {
+  return async () => {
+    try {
+      onProgress?.('Lade gespeicherte Bearbeitung …', 40)
+      let text: string
+      try {
+        const direct = await fetch(sessionUrl, { cache: 'no-store' })
+        if (!direct.ok) throw new Error(`HTTP ${direct.status}`)
+        text = await direct.text()
+      } catch (directErr) {
+        console.warn('[plixa session] Direkt-Abruf fehlgeschlagen → Proxy-Fallback', directErr)
+        const res = await fetch(`/api/ifc?u=${encodeURIComponent(sessionUrl)}`, {
+          cache: 'no-store',
+        })
+        if (!res.ok) throw new Error(`Sitzungs-Download fehlgeschlagen (${res.status})`)
+        text = await res.text()
+      }
+
+      const parsed = JSON.parse(text) as Partial<SceneGraph>
+      if (!parsed || typeof parsed !== 'object' || !parsed.nodes || !parsed.rootNodeIds?.length) {
+        throw new Error('Gespeicherte Bearbeitung ist leer oder ungültig.')
+      }
+      onProgress?.('Bearbeitung wiederhergestellt', 100)
+      return {
+        nodes: parsed.nodes,
+        rootNodeIds: parsed.rootNodeIds,
+        collections: parsed.collections,
+        materials: parsed.materials,
+      }
+    } catch (err) {
+      // Anders als beim frischen Aufbau NICHT still auf den lokalen Cache
+      // zurückfallen (der könnte veraltet sein) — den Fehler sichtbar melden.
+      const message = err instanceof Error ? err.message : String(err)
+      console.error('[plixa session] Fortsetzung fehlgeschlagen:', err)
       onError?.(message)
       throw err
     }

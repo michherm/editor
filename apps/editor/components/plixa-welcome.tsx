@@ -10,6 +10,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { discardEditorCache } from '@/lib/ifc-handoff'
 
 const SEEN_KEY = 'plixa-welcome-seen'
 
@@ -41,12 +42,9 @@ export function PlixaWelcome() {
       }),
     )
     if (!ok) return
-    try {
-      window.localStorage.removeItem('pascal-editor-scene')
-      window.localStorage.removeItem('plixa-last-project')
-    } catch {
-      // ignore
-    }
+    // Denselben Cache verwerfen wie beim frischen `ifc`/`geo`-Aufbau, damit der
+    // Editor beim Neuladen wieder sauber aus der exakten Geometrie aufbaut.
+    discardEditorCache()
     window.location.reload()
   }
 
