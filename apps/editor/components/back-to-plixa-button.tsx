@@ -14,6 +14,7 @@ import { sceneRegistry } from '@pascal-app/core'
 import { exportSceneToGlb, nextFrames, useScene, useViewer } from '@pascal-app/editor'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { getFinishAssignments } from '@/lib/calc/finishes-store'
 import { readProjectHandoffId } from '@/lib/ifc-handoff'
 
 const PLIXA_KONFIGURATOR_URL = 'https://plixa-ten.vercel.app/konfigurator'
@@ -66,6 +67,7 @@ async function uploadSessionScene(): Promise<string | null> {
       body: JSON.stringify({
         project: readProjectHandoffId(),
         scene: { nodes, rootNodeIds, collections, materials },
+        finishes: getFinishAssignments(),
       }),
     })
     const data = (await res.json().catch(() => ({}))) as { url?: string }

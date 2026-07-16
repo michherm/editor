@@ -29,6 +29,7 @@
  */
 import { ItemNode } from '@pascal-app/core'
 import type { SceneGraph } from '@pascal-app/editor'
+import { type FinishAssignments, hydrateFinishes, resetFinishes } from './calc/finishes-store'
 
 /** Liest die IFC-URL aus dem Query-String (nur im Browser). */
 export function readIfcHandoffUrl(): string | null {
@@ -106,6 +107,9 @@ const OBSOLETE_KEYS = ['plixa-last-project']
  * nur der Szenen-/Auswahl-Cache.
  */
 export function discardEditorCache(): void {
+  // Flächen-Belegungen sind In-Memory — beim frischen Aufbau ebenfalls verwerfen,
+  // damit nichts vom exakten Haus übrig bleibt.
+  resetFinishes()
   if (typeof window === 'undefined') return
   try {
     const toRemove: string[] = []
@@ -338,10 +342,14 @@ export function createSessionOnLoad(
         text = await res.text()
       }
 
-      const parsed = JSON.parse(text) as Partial<SceneGraph>
+      const parsed = JSON.parse(text) as Partial<SceneGraph> & {
+        plixaFinishes?: FinishAssignments
+      }
       if (!parsed || typeof parsed !== 'object' || !parsed.nodes || !parsed.rootNodeIds?.length) {
         throw new Error('Gespeicherte Bearbeitung ist leer oder ungültig.')
       }
+      // Flächen-Belegungen (Dachziegel/Tapete/…) aus der Sitzung wiederherstellen.
+      hydrateFinishes(parsed.plixaFinishes)
       onProgress?.('Bearbeitung wiederhergestellt', 100)
       return {
         nodes: parsed.nodes,

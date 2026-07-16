@@ -149,8 +149,11 @@ export function surfaceNormal(surface: ManifestSurface): Vec3 {
   let nz = 0
   const poly = surface.polygon
   for (let i = 0; i < poly.length; i++) {
-    const [cx, cy, cz] = poly[i]
-    const [px, py, pz] = poly[(i + 1) % poly.length]
+    const cur = poly[i]
+    const nxt = poly[(i + 1) % poly.length]
+    if (!cur || !nxt) continue
+    const [cx, cy, cz] = cur
+    const [px, py, pz] = nxt
     nx += (cy - py) * (cz + pz)
     ny += (cz - pz) * (cx + px)
     nz += (cx - px) * (cy + py)
