@@ -57,6 +57,17 @@ export function readSessionHandoffUrl(): string | null {
   }
 }
 
+/**
+ * Liest die stabile Projekt-ID (`&project=<uuid>`). Plixa hängt sie über alle
+ * „Gestalten"-Aufrufe DESSELBEN Projekts unverändert an. Wird AUSSCHLIESSLICH
+ * benutzt, um die Sitzungs-Datei beim Rückweg projektgebunden in R2 abzulegen
+ * (`session/<project>/…`). NICHT für die Cache-Fortsetzung — die läuft allein
+ * über `&session=` (siehe `readSessionHandoffUrl`).
+ */
+export function readProjectHandoffId(): string | null {
+  return readParam('project')
+}
+
 function readParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get(name)

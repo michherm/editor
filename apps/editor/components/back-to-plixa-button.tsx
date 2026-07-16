@@ -14,6 +14,7 @@ import { sceneRegistry } from '@pascal-app/core'
 import { exportSceneToGlb, nextFrames, useScene, useViewer } from '@pascal-app/editor'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { readProjectHandoffId } from '@/lib/ifc-handoff'
 
 const PLIXA_KONFIGURATOR_URL = 'https://plixa-ten.vercel.app/konfigurator'
 
@@ -21,24 +22,61 @@ const PLIXA_KONFIGURATOR_URL = 'https://plixa-ten.vercel.app/konfigurator'
  * Ziel-URL für die Rückkehr zu Plixa bestimmen. Plixa hängt an die Editor-URL
  * `&return=<plixa-adresse>` an (die genaue Adresse, auf der der Nutzer geplant
  * hat — localStorage ist pro Adresse getrennt). Wir kehren DORTHIN zurück, mit
- * `result=<glb-url>` angehängt. Fehlt/ungültig der return-Parameter, fällt es
- * auf die feste Konfigurator-Adresse zurück. Nur https + `*.vercel.app`
- * zugelassen (kein Open-Redirect auf beliebige Hosts).
+ * `result=<glb-url>` und — falls vorhanden — `session=<szene-json-url>`
+ * angehängt. Fehlt/ungültig der return-Parameter, fällt es auf die feste
+ * Konfigurator-Adresse zurück. Nur https + `*.vercel.app` zugelassen (kein
+ * Open-Redirect auf beliebige Hosts).
  */
-function buildReturnUrl(resultUrl: string): string {
-  const fallback = `${PLIXA_KONFIGURATOR_URL}?result=${encodeURIComponent(resultUrl)}`
-  if (typeof window === 'undefined') return fallback
+function buildReturnUrl(resultUrl: string, sessionUrl: string | null): string {
+  const append = (url: URL) => {
+    url.searchParams.set('result', resultUrl)
+    if (sessionUrl) url.searchParams.set('session', sessionUrl)
+  }
+  const fallback = new URL(PLIXA_KONFIGURATOR_URL)
+  append(fallback)
+  if (typeof window === 'undefined') return fallback.toString()
   const ret = new URLSearchParams(window.location.search).get('return')
-  if (!ret) return fallback
+  if (!ret) return fallback.toString()
   try {
     const target = new URL(ret)
     if (target.protocol !== 'https:' || !target.hostname.toLowerCase().endsWith('.vercel.app')) {
-      return fallback
+      return fallback.toString()
     }
-    target.searchParams.set('result', resultUrl)
+    append(target)
     return target.toString()
   } catch {
-    return fallback
+    return fallback.toString()
+  }
+}
+
+/**
+ * Den aktuellen editierbaren Szenengraph als JSON nach R2 schreiben und die
+ * öffentliche https-URL zurückgeben (oder null, wenn es scheitert). Das ist der
+ * VOLLSTÄNDIGE Stand inkl. exaktem Haus-Item — der Editor stellt ihn beim
+ * nächsten „Gestalten" über `&session=` 1:1 wieder her. Scheitert der Upload,
+ * bleibt die Rückkehr trotzdem möglich (nur ohne Fortsetzung), statt den Nutzer
+ * zu blockieren.
+ */
+async function uploadSessionScene(): Promise<string | null> {
+  try {
+    const { nodes, rootNodeIds, collections, materials } = useScene.getState()
+    const res = await fetch('/api/handoff-session', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        project: readProjectHandoffId(),
+        scene: { nodes, rootNodeIds, collections, materials },
+      }),
+    })
+    const data = (await res.json().catch(() => ({}))) as { url?: string }
+    if (!res.ok || !data.url) {
+      console.error('[plixa handoff] Sitzung speichern fehlgeschlagen:', res.status, data)
+      return null
+    }
+    return data.url
+  } catch (err) {
+    console.error('[plixa handoff] Sitzung speichern fehlgeschlagen:', err)
+    return null
   }
 }
 
@@ -136,7 +174,15 @@ export function BackToPlixaButton() {
         throw new Error(data.error ?? `upload_http_${res.status}: ${raw.slice(0, 200)}`)
       }
 
-      window.location.href = buildReturnUrl(data.url)
+      // Editierbaren Szenengraph als Sitzung sichern (für „weiter-editieren" beim
+      // nächsten Durchgang). Optional: scheitert es, kehren wir trotzdem zurück
+      // (nur ohne Fortsetzung), statt den Rückweg zu blockieren.
+      const sessionUrl = await uploadSessionScene()
+      if (sessionUrl) {
+        console.info(`[plixa handoff] Sitzung gespeichert: ${sessionUrl}`)
+      }
+
+      window.location.href = buildReturnUrl(data.url, sessionUrl)
     } catch (err) {
       useViewer.getState().setExporting(false)
       console.error('[plixa handoff] Rückweg fehlgeschlagen:', err)
