@@ -40,6 +40,7 @@ export async function POST(request: Request): Promise<Response> {
   let payload: {
     project?: unknown
     scene?: { nodes?: unknown; rootNodeIds?: unknown; collections?: unknown; materials?: unknown }
+    finishes?: unknown
   }
   try {
     payload = await request.json()
@@ -60,12 +61,24 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: 'invalid_scene' }, { status: 400 })
   }
 
+  // Flächen-Belegungen (surfaceId → finishId) mitschreiben, falls vorhanden, damit
+  // Dachziegel/Tapete/… beim nächsten „Gestalten" wieder da sind. Nur eine flache
+  // string→string-Map akzeptieren.
+  const rawFinishes = payload.finishes
+  const finishes: Record<string, string> = {}
+  if (rawFinishes && typeof rawFinishes === 'object' && !Array.isArray(rawFinishes)) {
+    for (const [k, v] of Object.entries(rawFinishes as Record<string, unknown>)) {
+      if (typeof v === 'string') finishes[k] = v
+    }
+  }
+
   // Nur den editierbaren Stand serialisieren (keine Fremdfelder mitschleppen).
   const body = JSON.stringify({
     nodes,
     rootNodeIds,
     collections: scene.collections,
     materials: scene.materials,
+    plixaFinishes: finishes,
   })
   const bytes = Buffer.byteLength(body, 'utf8')
   if (bytes === 0) return Response.json({ error: 'empty_body' }, { status: 400 })
