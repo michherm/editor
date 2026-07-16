@@ -1,10 +1,10 @@
 'use client'
 
-import { Editor, ItemsPanel, loadSceneFromLocalStorage } from '@pascal-app/editor'
+import { Editor, ItemsPanel } from '@pascal-app/editor'
 import { Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PlixaNavbar } from '@/components/plixa-navbar'
 import { BuildTab } from '@/components/build-tab'
@@ -17,15 +17,12 @@ import {
 } from '@/components/viewer-toolbar'
 import {
   createIfcOnLoad,
+  createSessionOnLoad,
+  discardEditorCache,
   readGeoHandoffUrl,
   readIfcHandoffUrl,
-  readProjectHandoffId,
+  readSessionHandoffUrl,
 } from '@/lib/ifc-handoff'
-
-// Merkt sich die zuletzt geöffnete Plixa-Projekt-ID. Kommt beim erneuten
-// „Gestalten" dieselbe `&project=`-ID an, setzt der Editor die gespeicherte
-// Bearbeitung fort (statt neu aus `geo` zu bauen).
-const LAST_PROJECT_KEY = 'plixa-last-project'
 
 // The open-source editor only ships the built-in catalog (no uploaded items),
 // so the Library/Community/Mine source chips and tag filters add nothing —
@@ -115,41 +112,43 @@ export default function Home() {
   // Weg B: exakte Plixa-Geometrie als GLB (`&geo=`) — falls vorhanden, ist sie
   // die angezeigte Geometrie; die IFC liefert die editierbaren Knoten.
   const [geoUrl] = useState<string | null>(() => readGeoHandoffUrl())
-  // Stabile Plixa-Projekt-ID (`&project=`). Gleich wie beim letzten Öffnen →
-  // Bearbeitung fortsetzen; neu/anders → frisch aus `geo` bauen.
-  const [projectHandoffId] = useState<string | null>(() => readProjectHandoffId())
-  const [continueSession] = useState<boolean>(() => {
-    if (typeof window === 'undefined' || !projectHandoffId) return false
-    return window.localStorage.getItem(LAST_PROJECT_KEY) === projectHandoffId
-  })
-  // Dieses Projekt als zuletzt geöffnetes merken (für den nächsten „Gestalten"-Sprung).
-  useEffect(() => {
-    if (projectHandoffId && typeof window !== 'undefined') {
-      window.localStorage.setItem(LAST_PROJECT_KEY, projectHandoffId)
-    }
-  }, [projectHandoffId])
+  // Fortsetzung: NUR mit `&session=<https-url>` wird ein gespeicherter Stand
+  // geladen. Fehlt sie, gewinnt immer die frische `ifc`/`geo`-Übergabe.
+  const [sessionUrl] = useState<string | null>(() => readSessionHandoffUrl())
   const [importProgress, setImportProgress] = useState<{ message: string; percent: number } | null>(
     null,
   )
   const [importError, setImportError] = useState<string | null>(null)
   const onLoad = useMemo(() => {
-    if (!ifcUrl) return undefined
-    const build = createIfcOnLoad(
-      ifcUrl,
-      geoUrl,
-      (message, percent) => setImportProgress({ message, percent }),
-      (message) => setImportError(message),
-    )
-    // Weiterarbeiten: gleiches Projekt wie zuletzt → die gespeicherte Szene
-    // (deine Bearbeitung) wiederherstellen, sonst frisch aus `geo` bauen. Fehlt
-    // eine gültige gespeicherte Szene, fällt es sauber auf den Neuaufbau zurück.
-    if (!continueSession) return build
-    return async () => {
-      const saved = loadSceneFromLocalStorage()
-      if (saved && (saved.rootNodeIds?.length ?? 0) > 0) return saved
-      return build()
+    // 1) Explizite Fortsetzung: gespeicherten Szenenstand von der `session`-URL
+    //    laden (weiter-editieren). Das ist der EINZIGE Pfad, der einen
+    //    gespeicherten Stand verwendet.
+    if (sessionUrl) {
+      return createSessionOnLoad(
+        sessionUrl,
+        (message, percent) => setImportProgress({ message, percent }),
+        (message) => setImportError(message),
+      )
     }
-  }, [ifcUrl, geoUrl, continueSession])
+    // 2) Keine `session`, aber frische Übergabe (`ifc`/`geo`): komplett NEU
+    //    aufbauen und JEDEN eigenen zwischengespeicherten Stand verwerfen, damit
+    //    der interne Cache das frische Plixa-Haus NIE überschreibt.
+    if (ifcUrl) {
+      const build = createIfcOnLoad(
+        ifcUrl,
+        geoUrl,
+        (message, percent) => setImportProgress({ message, percent }),
+        (message) => setImportError(message),
+      )
+      return async () => {
+        discardEditorCache()
+        return build()
+      }
+    }
+    // 3) Weder `session` noch Übergabe → eigenständiger Editor (lädt seinen
+    //    lokalen localStorage-Stand wie gewohnt).
+    return undefined
+  }, [ifcUrl, geoUrl, sessionUrl])
 
   return (
     <div className="relative h-screen w-screen">
