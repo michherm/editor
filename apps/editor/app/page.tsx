@@ -1,13 +1,14 @@
 'use client'
 
 import { Editor, ItemsPanel } from '@pascal-app/editor'
-import { Hammer, Layers, Package, Settings } from 'lucide-react'
+import { Calculator, Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PlixaNavbar } from '@/components/plixa-navbar'
 import { BuildTab } from '@/components/build-tab'
+import { CalcPanel } from '@/components/calc-panel'
 import { IfcImportOverlay } from '@/components/ifc-import-overlay'
 import { PlixaWelcome } from '@/components/plixa-welcome'
 import { uploadLocalScan } from '@/lib/local-scan-upload'
@@ -22,7 +23,10 @@ import {
   readGeoHandoffUrl,
   readIfcHandoffUrl,
   readSessionHandoffUrl,
+  readSurfacesHandoffUrl,
 } from '@/lib/ifc-handoff'
+import { fetchSurfaceManifest } from '@/lib/surfaces'
+import { setSurfaces } from '@/lib/surfaces-store'
 
 // The open-source editor only ships the built-in catalog (no uploaded items),
 // so the Library/Community/Mine source chips and tag filters add nothing —
@@ -83,6 +87,15 @@ const SIDEBAR_TAB_CONFIG = [
     ),
   },
   {
+    id: 'calc',
+    labelKey: 'tab.calc',
+    labelDefault: 'Kalkulation',
+    component: CalcPanel,
+    mobileDefaultSnap: 0.5,
+    mobileIcon: <Calculator className="h-5 w-5" />,
+    icon: <Calculator className="h-7 w-7" strokeWidth={1.5} />,
+  },
+  {
     id: 'settings',
     labelKey: 'tab.settings',
     component: () => null,
@@ -104,7 +117,12 @@ const PROJECT_ID = 'local-editor'
 
 export default function Home() {
   const { t } = useTranslation()
-  const sidebarTabs = SIDEBAR_TAB_CONFIG.map((tab) => ({ ...tab, label: t(tab.labelKey) }))
+  const sidebarTabs = SIDEBAR_TAB_CONFIG.map((tab) => ({
+    ...tab,
+    label: t(tab.labelKey, {
+      defaultValue: (tab as { labelDefault?: string }).labelDefault ?? tab.labelKey,
+    }),
+  }))
 
   // Hinweg-Übergabe: liegt `?ifc=<r2-url>` an, lädt der Editor sein Startbild aus
   // der IFC-Datei (statt aus localStorage) — direkt editierbar im gleichen Store.
@@ -115,6 +133,21 @@ export default function Home() {
   // Fortsetzung: NUR mit `&session=<https-url>` wird ein gespeicherter Stand
   // geladen. Fehlt sie, gewinnt immer die frische `ifc`/`geo`-Übergabe.
   const [sessionUrl] = useState<string | null>(() => readSessionHandoffUrl())
+  // Flächen-Manifest (`&surfaces=`): Dach/Wände/Böden/Decken mit exakten m² —
+  // Grundlage fürs Belegen und die Kalkulation. Kommt bei jedem „Gestalten" frisch.
+  const [surfacesUrl] = useState<string | null>(() => readSurfacesHandoffUrl())
+  useEffect(() => {
+    if (!surfacesUrl) return
+    let cancelled = false
+    fetchSurfaceManifest(surfacesUrl)
+      .then((manifest) => {
+        if (!cancelled) setSurfaces(manifest.surfaces)
+      })
+      .catch((err) => console.error('[plixa surfaces] Manifest laden fehlgeschlagen:', err))
+    return () => {
+      cancelled = true
+    }
+  }, [surfacesUrl])
   const [importProgress, setImportProgress] = useState<{ message: string; percent: number } | null>(
     null,
   )
