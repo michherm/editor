@@ -24,6 +24,14 @@ export type HelpBundle = {
   ai: {
     starter: { paint: string; brick: string; sofa: string; window: string; area: string }
   }
+  section: {
+    title: string
+    short: string
+    hide: string
+    top: string
+    bottom: string
+    groundOnly: string
+  }
 }
 
 export const helpResources: Record<string, HelpBundle> = {
@@ -45,6 +53,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Schneide ein Fenster in die Südwand.',
       area: 'Wie viele Quadratmeter hat das Erdgeschoss?',
     } },
+    section: { title: 'Dach / Schnitt', short: 'Dach', hide: 'Dach ausblenden', top: 'Schnitt oben', bottom: 'Schnitt unten', groundOnly: 'Nur Erdgeschoss zeigen' },
   },
   en: {
     welcome: {
@@ -64,6 +73,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Cut a window into the south wall.',
       area: 'How many square metres is the ground floor?',
     } },
+    section: { title: 'Roof / section', short: 'Roof', hide: 'Hide roof', top: 'Cut top', bottom: 'Cut bottom', groundOnly: 'Show ground floor only' },
   },
   fr: {
     welcome: {
@@ -83,6 +93,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Perce une fenêtre dans le mur sud.',
       area: 'Combien de mètres carrés fait le rez-de-chaussée ?',
     } },
+    section: { title: 'Toit / coupe', short: 'Toit', hide: 'Masquer le toit', top: 'Coupe haut', bottom: 'Coupe bas', groundOnly: 'Afficher seulement le rez-de-chaussée' },
   },
   pl: {
     welcome: {
@@ -102,6 +113,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Wytnij okno w południowej ścianie.',
       area: 'Ile metrów kwadratowych ma parter?',
     } },
+    section: { title: 'Dach / przekrój', short: 'Dach', hide: 'Ukryj dach', top: 'Przekrój góra', bottom: 'Przekrój dół', groundOnly: 'Pokaż tylko parter' },
   },
   it: {
     welcome: {
@@ -121,6 +133,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Apri una finestra nella parete sud.',
       area: 'Quanti metri quadri ha il piano terra?',
     } },
+    section: { title: 'Tetto / sezione', short: 'Tetto', hide: 'Nascondi il tetto', top: 'Taglio in alto', bottom: 'Taglio in basso', groundOnly: 'Mostra solo il piano terra' },
   },
   es: {
     welcome: {
@@ -140,6 +153,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Abre una ventana en la pared sur.',
       area: '¿Cuántos metros cuadrados tiene la planta baja?',
     } },
+    section: { title: 'Tejado / sección', short: 'Tejado', hide: 'Ocultar el tejado', top: 'Corte superior', bottom: 'Corte inferior', groundOnly: 'Mostrar solo la planta baja' },
   },
   nl: {
     welcome: {
@@ -159,6 +173,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Maak een raam in de zuidmuur.',
       area: 'Hoeveel vierkante meter is de begane grond?',
     } },
+    section: { title: 'Dak / doorsnede', short: 'Dak', hide: 'Dak verbergen', top: 'Snede boven', bottom: 'Snede onder', groundOnly: 'Alleen begane grond tonen' },
   },
   pt: {
     welcome: {
@@ -178,6 +193,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Abre uma janela na parede sul.',
       area: 'Quantos metros quadrados tem o rés-do-chão?',
     } },
+    section: { title: 'Telhado / corte', short: 'Telhado', hide: 'Ocultar o telhado', top: 'Corte em cima', bottom: 'Corte em baixo', groundOnly: 'Mostrar só o rés-do-chão' },
   },
   cs: {
     welcome: {
@@ -197,6 +213,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Vyřízni okno do jižní stěny.',
       area: 'Kolik metrů čtverečních má přízemí?',
     } },
+    section: { title: 'Střecha / řez', short: 'Střecha', hide: 'Skrýt střechu', top: 'Řez nahoře', bottom: 'Řez dole', groundOnly: 'Zobrazit jen přízemí' },
   },
   sv: {
     welcome: {
@@ -216,6 +233,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Ta upp ett fönster i södra väggen.',
       area: 'Hur många kvadratmeter är bottenvåningen?',
     } },
+    section: { title: 'Tak / snitt', short: 'Tak', hide: 'Dölj taket', top: 'Snitt uppe', bottom: 'Snitt nere', groundOnly: 'Visa endast bottenvåningen' },
   },
   da: {
     welcome: {
@@ -235,6 +253,7 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Lav et vindue i sydvæggen.',
       area: 'Hvor mange kvadratmeter er stueetagen?',
     } },
+    section: { title: 'Tag / snit', short: 'Tag', hide: 'Skjul taget', top: 'Snit foroven', bottom: 'Snit forneden', groundOnly: 'Vis kun stueetagen' },
   },
   ro: {
     welcome: {
@@ -254,5 +273,6 @@ export const helpResources: Record<string, HelpBundle> = {
       window: 'Taie o fereastră în peretele sudic.',
       area: 'Câți metri pătrați are parterul?',
     } },
+    section: { title: 'Acoperiș / secțiune', short: 'Acoperiș', hide: 'Ascunde acoperișul', top: 'Tăietură sus', bottom: 'Tăietură jos', groundOnly: 'Arată doar parterul' },
   },
 }
