@@ -68,6 +68,22 @@ export function readProjectHandoffId(): string | null {
   return readParam('project')
 }
 
+/**
+ * Liest die Flächen-Manifest-URL (`&surfaces=<https-json-url>`). Plixa liefert
+ * darin für jede belegbare Hausfläche (Dach/Wand/Boden/Decke) Art, exakte m² und
+ * Umriss — Grundlage fürs Anklicken einzelner Flächen und die Kalkulation. Nur
+ * `https` wird akzeptiert.
+ */
+export function readSurfacesHandoffUrl(): string | null {
+  const raw = readParam('surfaces')
+  if (!raw) return null
+  try {
+    return new URL(raw).protocol === 'https:' ? raw : null
+  } catch {
+    return null
+  }
+}
+
 function readParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get(name)
