@@ -176,10 +176,10 @@ async function fetchGeoGlb(geoUrl: string): Promise<ArrayBuffer> {
 async function attachExactGeometry(
   nodes: Record<string, unknown>,
   geoUrl: string,
+  buf: ArrayBuffer,
   onProgress?: (message: string, percent: number) => void,
 ): Promise<void> {
-  onProgress?.('Lade exakte Geometrie …', 92)
-  const buf = await fetchGeoGlb(geoUrl)
+  onProgress?.('Exakte Geometrie …', 92)
   console.info(`[plixa geo] GLB geladen: ${(buf.byteLength / 1e6).toFixed(1)} MB`)
 
   // AABB des GLB bestimmen (Zentrierung + Grundriss-Maße). GLTFLoader baut den
@@ -259,6 +259,22 @@ export function createIfcOnLoad(
   onError?: (message: string) => void,
 ): () => Promise<SceneGraph> {
   return async () => {
+    // Die großen, unabhängigen Arbeiten SOFORT und PARALLEL anstoßen, damit sie
+    // sich mit dem IFC-Laden/Umrechnen überlappen (statt nacheinander zu laufen):
+    //  - der große geo-GLB-Download (der größte Brocken)
+    //  - das ifc-converter-Modul (zieht die web-ifc-WASM)
+    // So bestimmt die langsamste EINE Arbeit die Wartezeit, nicht ihre Summe.
+    const geoBufPromise: Promise<ArrayBuffer | null> = geoUrl
+      ? fetchGeoGlb(geoUrl).catch((e) => {
+          console.error('[plixa geo] Vorab-Download fehlgeschlagen — parametrischer Nachbau:', e)
+          return null
+        })
+      : Promise.resolve(null)
+    const converterPromise = import('@pascal-app/ifc-converter')
+    // Handler anhängen, damit ein evtl. Fehler nicht als „unhandled rejection"
+    // gilt, falls der Ablauf vorher abbricht — awaited wird unten regulär.
+    converterPromise.catch(() => {})
+
     try {
       onProgress?.('Lade IFC …', 2)
       const res = await fetch(`/api/ifc?u=${encodeURIComponent(ifcUrl)}`, { cache: 'no-store' })
@@ -268,7 +284,7 @@ export function createIfcOnLoad(
       }
       const buf = await res.arrayBuffer()
 
-      const { convertIfcToPascal } = await import('@pascal-app/ifc-converter')
+      const { convertIfcToPascal } = await converterPromise
       const graph = await convertIfcToPascal(new Uint8Array(buf), onProgress)
 
       // Konvertierung „erfolgreich", aber ohne Knoten → für den Nutzer eine leere
@@ -279,12 +295,13 @@ export function createIfcOnLoad(
 
       const nodes = graph.nodes as Record<string, unknown>
 
-      // Weg B: exakte GLB-Geometrie laden und anzeigen, parametrischen Nachbau
-      // ausblenden. Schlägt das GLB fehl, bleibt der parametrische Nachbau
-      // sichtbar (robuster Fallback statt leerer Szene).
+      // Weg B: exakte GLB-Geometrie anzeigen (bereits parallel vorgeladen),
+      // parametrischen Nachbau ausblenden. Schlägt das GLB fehl (geoBuf = null),
+      // bleibt der parametrische Nachbau sichtbar (robuster Fallback).
       if (geoUrl) {
         try {
-          await attachExactGeometry(nodes, geoUrl, onProgress)
+          const geoBuf = await geoBufPromise
+          if (geoBuf) await attachExactGeometry(nodes, geoUrl, geoBuf, onProgress)
         } catch (geoErr) {
           console.error(
             '[plixa handoff] Exakte Geometrie (GLB) fehlgeschlagen — nutze parametrischen Nachbau:',
