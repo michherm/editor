@@ -27,7 +27,7 @@ export function PlixaNavbar({ embedded = false }: { embedded?: boolean }) {
     // KEINE zwei Leisten übereinander erscheinen, blendet Plixa im eingebetteten
     // Modus (embed=1) seine eigene Konfigurator-Kopfzeile aus.
     return (
-      <div className="flex h-12 w-full shrink-0 items-center justify-between gap-3 border-black/10 border-b bg-[#f7f4ee] px-4">
+      <div className="flex h-12 w-full shrink-0 items-center justify-between gap-3 border-black/10 border-b bg-white px-4">
         <span className="flex items-center gap-2.5">
           <span className="relative block h-6 w-[104px] shrink-0">
             <Image
