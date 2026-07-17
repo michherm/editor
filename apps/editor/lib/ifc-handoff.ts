@@ -85,6 +85,25 @@ export function readSurfacesHandoffUrl(): string | null {
   }
 }
 
+export type GeoBbox = { min: [number, number, number]; max: [number, number, number] }
+
+/**
+ * Liest die Bounding-Box der geo-GLB (`&geobbox=minX,minY,minZ,maxX,maxY,maxZ`,
+ * Weltmeter, selbes Koordinatensystem wie die geo-GLB). Ist sie da, muss der
+ * Editor das (komprimierte, große) Modell NICHT selbst auswerten, um es zu
+ * zentrieren — spart einen kompletten Parse-Durchgang. Fehlt/ungültig → null.
+ */
+export function readGeoBboxHandoff(): GeoBbox | null {
+  const raw = readParam('geobbox')
+  if (!raw) return null
+  const n = raw.split(',').map((s) => Number(s.trim()))
+  if (n.length !== 6 || n.some((v) => !Number.isFinite(v))) return null
+  return {
+    min: n.slice(0, 3) as [number, number, number],
+    max: n.slice(3, 6) as [number, number, number],
+  }
+}
+
 function readParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get(name)
@@ -191,31 +210,56 @@ function fetchGeoGlb(geoUrl: string): Promise<ArrayBuffer> {
 async function attachExactGeometry(
   nodes: Record<string, unknown>,
   geoUrl: string,
-  buf: ArrayBuffer,
+  source: { buf?: ArrayBuffer; bbox?: GeoBbox },
   onProgress?: (message: string, percent: number) => void,
 ): Promise<void> {
-  onProgress?.('Exakte Geometrie …', 92)
-  console.info(`[plixa geo] GLB geladen: ${(buf.byteLength / 1e6).toFixed(1)} MB`)
+  // Zentrierung + Grundriss-Maße bestimmen. PRIMÄR aus der übergebenen
+  // Bounding-Box (`&geobbox=`) — dann muss die große, Meshopt-komprimierte GLB
+  // hier gar NICHT geparst werden. Fehlt die Box, das GLB parsen (mit
+  // Meshopt-Decoder, damit auch komprimierte GLBs vermessen werden).
+  let center: [number, number, number]
+  let size: [number, number, number]
+  let minY: number
 
-  // AABB des GLB bestimmen (Zentrierung + Grundriss-Maße). GLTFLoader baut den
-  // Szenengraphen MIT allen Knoten-Matrizen (0,001-Scale + Meter-Position) — die
-  // Box3 misst also echte Weltmeter. GLTFLoader und three dynamisch laden.
-  const [{ GLTFLoader }, three] = await Promise.all([
-    import('three/examples/jsm/loaders/GLTFLoader.js'),
-    import('three'),
-  ])
-  const gltf = await new Promise<{ scene: unknown }>((resolve, reject) => {
-    new GLTFLoader().parse(buf.slice(0), '', (g: { scene: unknown }) => resolve(g), reject)
-  })
-  const box = new three.Box3().setFromObject(gltf.scene)
-  const size = new three.Vector3()
-  const center = new three.Vector3()
-  box.getSize(size)
-  box.getCenter(center)
-  console.info(
-    `[plixa geo] Bounding-Box (m): ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)}` +
-      ` — Zentrum [${center.x.toFixed(1)}, ${center.y.toFixed(1)}, ${center.z.toFixed(1)}]`,
-  )
+  if (source.bbox) {
+    const { min, max } = source.bbox
+    center = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2]
+    size = [max[0] - min[0], max[1] - min[1], max[2] - min[2]]
+    minY = min[1]
+    console.info(
+      `[plixa geo] Bounding-Box aus &geobbox= (m): ${size[0].toFixed(1)} × ${size[1].toFixed(1)} × ${size[2].toFixed(1)}`,
+    )
+  } else if (source.buf) {
+    onProgress?.('Exakte Geometrie …', 92)
+    const buf = source.buf
+    console.info(`[plixa geo] GLB geladen: ${(buf.byteLength / 1e6).toFixed(1)} MB`)
+    // GLTFLoader baut den Szenengraphen mit allen Knoten-Matrizen → Box3 misst
+    // echte Weltmeter. Meshopt-Decoder aktivieren (komprimierte GLBs).
+    const [{ GLTFLoader }, three, { MeshoptDecoder }] = await Promise.all([
+      import('three/examples/jsm/loaders/GLTFLoader.js'),
+      import('three'),
+      import('three/examples/jsm/libs/meshopt_decoder.module.js'),
+    ])
+    const loader = new GLTFLoader()
+    loader.setMeshoptDecoder(MeshoptDecoder)
+    const gltf = await new Promise<{ scene: unknown }>((resolve, reject) => {
+      loader.parse(buf.slice(0), '', (g: { scene: unknown }) => resolve(g), reject)
+    })
+    const box = new three.Box3().setFromObject(gltf.scene)
+    const s = new three.Vector3()
+    const c = new three.Vector3()
+    box.getSize(s)
+    box.getCenter(c)
+    center = [c.x, c.y, c.z]
+    size = [s.x, s.y, s.z]
+    minY = box.min.y
+    console.info(
+      `[plixa geo] Bounding-Box (m): ${size[0].toFixed(1)} × ${size[1].toFixed(1)} × ${size[2].toFixed(1)}` +
+        ` — Zentrum [${center[0].toFixed(1)}, ${center[1].toFixed(1)}, ${center[2].toFixed(1)}]`,
+    )
+  } else {
+    return
+  }
 
   type Levelish = {
     type?: string
@@ -232,7 +276,7 @@ async function attachExactGeometry(
   const item = ItemNode.parse({
     name: 'Plixa Haus (exakt)',
     // XZ auf Ursprung zentrieren, Basis auf den Boden der untersten Ebene setzen.
-    position: [-center.x, -box.min.y, -center.z],
+    position: [-center[0], -minY, -center[2]],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     parentId: ground?.id ?? null,
@@ -247,7 +291,7 @@ async function attachExactGeometry(
       // und der Renderer fiele auf die Drahtgitter-Platzhalterbox zurück. Eine
       // http(s)-URL reicht resolveCdnUrl durch; useGLTF lädt sie direkt von R2.
       src: geoUrl,
-      dimensions: [size.x, size.y, size.z],
+      dimensions: size,
     },
   })
   ;(nodes as Record<string, unknown>)[item.id] = item
@@ -274,17 +318,22 @@ export function createIfcOnLoad(
   onError?: (message: string) => void,
 ): () => Promise<SceneGraph> {
   return async () => {
+    // Liegt die Bounding-Box an (`&geobbox=`), muss die große geo-GLB hier weder
+    // heruntergeladen NOCH geparst werden — das Item wird sofort aus der Box
+    // gebaut, und der Anzeige-Loader (useGLTF) lädt das Modell erst beim Rendern
+    // (streamt hinein). Das spart Download-Wartezeit UND einen Parse-Durchgang.
+    const geoBbox = geoUrl ? readGeoBboxHandoff() : null
+
     // Die großen, unabhängigen Arbeiten SOFORT und PARALLEL anstoßen, damit sie
-    // sich mit dem IFC-Laden/Umrechnen überlappen (statt nacheinander zu laufen):
-    //  - der große geo-GLB-Download (der größte Brocken)
-    //  - das ifc-converter-Modul (zieht die web-ifc-WASM)
-    // So bestimmt die langsamste EINE Arbeit die Wartezeit, nicht ihre Summe.
-    const geoBufPromise: Promise<ArrayBuffer | null> = geoUrl
-      ? fetchGeoGlb(geoUrl).catch((e) => {
-          console.error('[plixa geo] Vorab-Download fehlgeschlagen — parametrischer Nachbau:', e)
-          return null
-        })
-      : Promise.resolve(null)
+    // sich mit dem IFC-Laden/Umrechnen überlappen. Den geo-Puffer nur vorladen,
+    // wenn wir ihn wirklich brauchen (kein bbox → wir müssen zum Ausmessen parsen).
+    const geoBufPromise: Promise<ArrayBuffer | null> =
+      geoUrl && !geoBbox
+        ? fetchGeoGlb(geoUrl).catch((e) => {
+            console.error('[plixa geo] Vorab-Download fehlgeschlagen — parametrischer Nachbau:', e)
+            return null
+          })
+        : Promise.resolve(null)
     const converterPromise = import('@pascal-app/ifc-converter')
     // Handler anhängen, damit ein evtl. Fehler nicht als „unhandled rejection"
     // gilt, falls der Ablauf vorher abbricht — awaited wird unten regulär.
@@ -307,13 +356,19 @@ export function createIfcOnLoad(
 
       const nodes = graph.nodes as Record<string, unknown>
 
-      // Weg B: exakte GLB-Geometrie anzeigen (bereits parallel vorgeladen),
-      // parametrischen Nachbau ausblenden. Schlägt das GLB fehl (geoBuf = null),
-      // bleibt der parametrische Nachbau sichtbar (robuster Fallback).
+      // Weg B: exakte GLB-Geometrie anzeigen, parametrischen Nachbau ausblenden.
+      //  - Mit `&geobbox=`: Item sofort aus der Box bauen (kein Download-Warten,
+      //    kein Parse) — die geo-GLB streamt beim Rendern über useGLTF hinein.
+      //  - Ohne Box: die vorgeladene GLB parsen (Meshopt-fähig). Schlägt sie fehl
+      //    (geoBuf = null), bleibt der parametrische Nachbau sichtbar (Fallback).
       if (geoUrl) {
         try {
-          const geoBuf = await geoBufPromise
-          if (geoBuf) await attachExactGeometry(nodes, geoUrl, geoBuf, onProgress)
+          if (geoBbox) {
+            await attachExactGeometry(nodes, geoUrl, { bbox: geoBbox }, onProgress)
+          } else {
+            const geoBuf = await geoBufPromise
+            if (geoBuf) await attachExactGeometry(nodes, geoUrl, { buf: geoBuf }, onProgress)
+          }
         } catch (geoErr) {
           console.error(
             '[plixa handoff] Exakte Geometrie (GLB) fehlgeschlagen — nutze parametrischen Nachbau:',
