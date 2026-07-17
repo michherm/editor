@@ -230,6 +230,12 @@ export default function Home() {
           onUploadAsset: (_projectId, levelId, file, type) => {
             if (type === 'scan') void uploadLocalScan(file, levelId)
           },
+          // Das exakte Plixa-Haus wird als EIN gebackenes GLB angezeigt; der
+          // parametrische IFC-Nachbau bleibt nur versteckt zum Bearbeiten
+          // erhalten. Diese vielen durchgestrichenen „Wand/Dach"-Zeilen sind für
+          // den Plixa-Nutzer reines Rauschen — aus dem Baum ausblenden, damit die
+          // Struktur sauber bleibt (nur Haus + selbst platzierte Möbel).
+          hideHiddenElements: true,
         }}
         viewerToolbarLeft={<CommunityViewerToolbarLeft />}
         viewerToolbarRight={<CommunityViewerToolbarRight />}

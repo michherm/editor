@@ -245,12 +245,24 @@ async function attachExactGeometry(
   // (Item-Position [0,0,0], das GLB rendert an seinen nativen Koordinaten). Grund:
   // platzierte Objekte müssen im SELBEN Frame wie die gelieferte geo-GLB liegen,
   // sonst kommen sie beim Rückweg (?result=) um die BBox-Mitte (~halbe Hausbreite)
-  // versetzt bei Plixa an. Wir messen nur die Größe fürs Gizmo/Grundriss
-  // (Meshopt-fähig); Zentrum/Boden werden bewusst NICHT zum Verschieben genutzt.
-  const { size } = await measureGeoAabb(buf)
+  // versetzt bei Plixa an. Wir messen Größe UND Weltzentrum: die Größe fürs Gizmo/
+  // Grundriss, das Zentrum NUR fürs Kamera-Einrahmen (NICHT zum Verschieben).
+  const { center, size } = await measureGeoAabb(buf)
   console.info(
     `[plixa geo] Größe (m): ${size[0].toFixed(1)} × ${size[1].toFixed(1)} × ${size[2].toFixed(1)}`,
   )
+
+  // Das ECHTE Welt-Footprint des gerenderten GLB (XZ) als Knoten-Metadaten
+  // hinterlegen. Da das Item auf [0,0,0] steht, das Mesh aber an seinen nativen
+  // Weltkoordinaten (Zentrum ~halbe Hausbreite vom Ursprung) rendert, kann die
+  // Auto-Einrahmung (computeSceneBoundsXZ) die Hauslage NICHT aus dem Graphen
+  // ableiten — sie würde eine winzige Box am Ursprung einrahmen (Haus „viel zu
+  // extrem"). Über `metadata.worldBoundsXZ` erhält sie das wahre Rechteck. Die
+  // Metadaten wandern in die Sitzung mit → auch „weiter-editieren" rahmt korrekt.
+  const worldBoundsXZ = {
+    min: [center[0] - size[0] / 2, center[2] - size[2] / 2] as [number, number],
+    max: [center[0] + size[0] / 2, center[2] + size[2] / 2] as [number, number],
+  }
 
   type Levelish = {
     type?: string
@@ -272,6 +284,9 @@ async function attachExactGeometry(
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     parentId: ground?.id ?? null,
+    // Wahres Welt-Footprint fürs Kamera-Einrahmen (siehe oben). Rein informativ,
+    // beeinflusst das Rendering NICHT.
+    metadata: { worldBoundsXZ },
     asset: {
       id: 'plixa-exact-house',
       category: 'building',
