@@ -180,4 +180,40 @@ describe('computeSceneBoundsXZ', () => {
     expect(bounds!.min).toEqual([0, 0])
     expect(bounds!.max).toEqual([4, 2])
   })
+
+  test('honours an explicit metadata.worldBoundsXZ footprint', () => {
+    // A baked-GLB item whose node sits at [0,0,0] but whose mesh renders far
+    // from the origin: without the declared footprint the camera would frame a
+    // tiny box at the origin. The declared box must drive the bounds.
+    const nodes: Record<string, AnyNode> = {
+      house: {
+        object: 'node',
+        id: 'item_house',
+        type: 'item',
+        parentId: null,
+        visible: true,
+        metadata: { worldBoundsXZ: { min: [2, 3], max: [12, 11] } },
+        position: [0, 0, 0],
+        rotation: [0, 0, 0],
+        scale: [1, 1, 1],
+        children: [],
+        asset: {
+          id: 'plixa-exact-house',
+          category: 'building',
+          name: 'House',
+          thumbnail: '',
+          src: '',
+          dimensions: [10, 6, 8],
+          offset: [0, 0, 0],
+          rotation: [0, 0, 0],
+          scale: [1, 1, 1],
+        },
+      } as unknown as AnyNode,
+    }
+    const bounds = computeSceneBoundsXZ(nodes)
+    expect(bounds).not.toBeNull()
+    // Origin (node position) plus the declared corners → [0,0]..[12,11].
+    expect(bounds!.min).toEqual([0, 0])
+    expect(bounds!.max).toEqual([12, 11])
+  })
 })

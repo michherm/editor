@@ -49,6 +49,10 @@ function extendPoint(
  *   - `start`/`end`  → wall and fence endpoints in level coordinates.
  *   - `polygon`      → zone, slab, site-boundary polygons.
  *   - `position`     → building/item/door/window position; uses [x, z] only.
+ *   - `metadata.worldBoundsXZ` → an explicit rendered footprint on the XZ
+ *     plane (`{ min:[x,z], max:[x,z] }`). A node declares this when its true
+ *     world footprint can't be derived from the graph — e.g. a baked GLB item
+ *     whose mesh renders at native coordinates while its node sits at [0,0,0].
  *
  * Site-node polygons are intentionally excluded when they are the default
  * 30×30 bootstrap polygon — otherwise a brand-new empty scene would frame
@@ -115,6 +119,17 @@ export function computeSceneBoundsXZ(
     const position = anyNode.position as unknown
     if (Array.isArray(position) && position.length >= 3) {
       extendPoint(acc, position[0], position[2])
+    }
+
+    // Explicit rendered footprint (see the doc comment above). Takes the two
+    // opposite corners of the declared XZ box. Used for baked-GLB items whose
+    // mesh sits away from their [0,0,0] node position.
+    const metadata = anyNode.metadata as { worldBoundsXZ?: unknown } | undefined
+    const worldBounds = metadata?.worldBoundsXZ as { min?: unknown; max?: unknown } | undefined
+    if (worldBounds && typeof worldBounds === 'object') {
+      const { min, max } = worldBounds
+      if (Array.isArray(min) && min.length >= 2) extendPoint(acc, min[0], min[1])
+      if (Array.isArray(max) && max.length >= 2) extendPoint(acc, max[0], max[1])
     }
   }
 

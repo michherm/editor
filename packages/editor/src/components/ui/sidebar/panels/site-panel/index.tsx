@@ -1294,7 +1294,11 @@ const MultiSelectionBadge = memo(function MultiSelectionBadge() {
   )
 })
 
-const ContentSection = memo(function ContentSection() {
+const ContentSection = memo(function ContentSection({
+  hideHiddenElements = false,
+}: {
+  hideHiddenElements?: boolean
+}) {
   const selectedLevelId = useViewer((state) => state.selection.levelId)
   const structureLayer = useEditor((state) => state.structureLayer)
   const phase = useEditor((state) => state.phase)
@@ -1318,7 +1322,16 @@ const ContentSection = memo(function ContentSection() {
       if (!selectedLevelId) return []
       const lvl = s.nodes[selectedLevelId] as LevelNode | undefined
       if (!lvl) return []
-      return lvl.children.filter((childId) => s.nodes[childId]?.type !== 'zone')
+      return lvl.children.filter((childId) => {
+        const child = s.nodes[childId]
+        if (child?.type === 'zone') return false
+        // Optionally drop hidden elements (rendered struck-through). Embedders
+        // that swap the parametric build for one baked mesh (e.g. an imported
+        // exact-geometry GLB) keep those source nodes hidden for editing but
+        // don't want the long struck-through list cluttering the tree.
+        if (hideHiddenElements && child?.visible === false) return false
+        return true
+      })
     }),
   )
 
@@ -1382,6 +1395,7 @@ const BuildingItem = memo(function BuildingItem({
   projectId,
   onUploadAsset,
   onDeleteAsset,
+  hideHiddenElements = false,
 }: {
   building: BuildingNode
   isBuildingActive: boolean
@@ -1390,6 +1404,7 @@ const BuildingItem = memo(function BuildingItem({
   projectId?: string
   onUploadAsset?: (projectId: string, levelId: string, file: File, type: 'scan' | 'guide') => void
   onDeleteAsset?: (projectId: string, url: string) => void
+  hideHiddenElements?: boolean
 }) {
   const setSelection = useViewer((state) => state.setSelection)
   const phase = useEditor((state) => state.phase)
@@ -1531,7 +1546,7 @@ const BuildingItem = memo(function BuildingItem({
               </div>
               <div className="subtle-scrollbar relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
                 <MultiSelectionBadge />
-                <ContentSection />
+                <ContentSection hideHiddenElements={hideHiddenElements} />
               </div>
             </div>
           </motion.div>
@@ -1545,9 +1560,22 @@ export interface SitePanelProps {
   projectId?: string
   onUploadAsset?: (projectId: string, levelId: string, file: File, type: 'scan' | 'guide') => void
   onDeleteAsset?: (projectId: string, url: string) => void
+  /**
+   * Hide struck-through (invisible) elements from the level's element tree.
+   * Off by default so the standalone editor keeps its full hide/show tree. An
+   * embedder that replaces the parametric build with one baked mesh (e.g. an
+   * imported exact-geometry GLB whose source nodes stay hidden for editing)
+   * turns this on to keep the tree clean.
+   */
+  hideHiddenElements?: boolean
 }
 
-export function SitePanel({ projectId, onUploadAsset, onDeleteAsset }: SitePanelProps = {}) {
+export function SitePanel({
+  projectId,
+  onUploadAsset,
+  onDeleteAsset,
+  hideHiddenElements = false,
+}: SitePanelProps = {}) {
   const rootNodeIds = useScene((state) => state.rootNodeIds)
   const updateNode = useScene((state) => state.updateNode)
   const selectedBuildingId = useViewer((state) => state.selection.buildingId)
@@ -1646,6 +1674,7 @@ export function SitePanel({ projectId, onUploadAsset, onDeleteAsset }: SitePanel
                     building={building}
                     buildingCameraOpen={buildingCameraOpen}
                     isBuildingActive={isBuildingActive}
+                    hideHiddenElements={hideHiddenElements}
                     key={building.id}
                     onDeleteAsset={onDeleteAsset}
                     onUploadAsset={onUploadAsset}
