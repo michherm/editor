@@ -226,6 +226,9 @@ export {
   SnapTargetIcon,
 } from './components/ui/snap-target-badge'
 export type { SaveStatus } from './hooks/use-auto-save'
+// Imperative "fit the camera onto the current scene", for hosts that swap the
+// scene via onLoad (the empty→non-empty auto-frame doesn't cover a swap).
+export { frameCurrentScene } from './hooks/use-auto-frame'
 // useDragAction is the React-side glue for the registry's DragAction
 // primitive. Public so registry-driven kinds (Phase 5+ Stage D ports)
 // can express their affordances declaratively in their own folder.
