@@ -25,6 +25,7 @@ import {
   readIfcHandoffUrl,
   readSessionHandoffUrl,
   readSurfacesHandoffUrl,
+  resolvePlixaParentOrigin,
 } from '@/lib/ifc-handoff'
 import { fetchSurfaceManifest } from '@/lib/surfaces'
 import { setSurfaces } from '@/lib/surfaces-store'
@@ -158,6 +159,16 @@ export default function Home() {
     v.setEdges('off')
     v.setShadows(false)
   }, [inPlixaFlow])
+  // Eingebettet: der Plixa-Elternseite melden „Editor ist da & bereit". Plixa kann
+  // darauf mit einem winzigen Listener seine EIGENE dunkle Overlay-Kopfzeile
+  // ausblenden (der Editor bringt selbst eine passende helle Leiste mit). So bleibt
+  // GENAU eine Leiste — ohne dass der Editor die (aus Sicherheitsgründen
+  // unantastbare) Elternseite selbst anfassen müsste.
+  useEffect(() => {
+    if (!embedded || typeof window === 'undefined' || window.parent === window) return
+    const target = resolvePlixaParentOrigin() ?? 'https://plixa-ten.vercel.app'
+    window.parent.postMessage({ type: 'plixa-editor:ready', hideParentChrome: true }, target)
+  }, [embedded])
   useEffect(() => {
     if (!surfacesUrl) return
     let cancelled = false
