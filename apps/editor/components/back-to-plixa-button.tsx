@@ -61,14 +61,34 @@ function buildReturnUrl(resultUrl: string, sessionUrl: string | null): string {
 async function uploadSessionScene(): Promise<string | null> {
   try {
     const { nodes, rootNodeIds, collections, materials } = useScene.getState()
+    const json = JSON.stringify({
+      project: readProjectHandoffId(),
+      scene: { nodes, rootNodeIds, collections, materials },
+      finishes: getFinishAssignments(),
+    })
+
+    // WICHTIG: Den Body gzippen. Eine vollständige Haus-Szene (viele Knoten) kann
+    // sonst Vercels ~4,5-MB-Request-Limit sprengen — dann käme KEINE Sitzung
+    // zurück (`&session=` fehlt) und die Bearbeitung ginge beim nächsten
+    // „Gestalten" verloren. Gzip verkleinert JSON typ. um das 5–10-fache. Fehlt
+    // `CompressionStream` (sehr alte Browser), sauberer Fallback auf unkomprimiert.
+    let body: string | ArrayBuffer = json
+    let contentType = 'application/json'
+    if (typeof CompressionStream !== 'undefined') {
+      const stream = new Blob([json]).stream().pipeThrough(new CompressionStream('gzip'))
+      body = await new Response(stream).arrayBuffer()
+      contentType = 'application/gzip'
+    }
+    console.info(
+      `[plixa handoff] Sitzung: ${(json.length / 1e6).toFixed(2)} MB JSON → ${
+        typeof body === 'string' ? 'unkomprimiert' : `${(body.byteLength / 1e6).toFixed(2)} MB gzip`
+      }`,
+    )
+
     const res = await fetch('/api/handoff-session', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        project: readProjectHandoffId(),
-        scene: { nodes, rootNodeIds, collections, materials },
-        finishes: getFinishAssignments(),
-      }),
+      headers: { 'content-type': contentType },
+      body,
     })
     const data = (await res.json().catch(() => ({}))) as { url?: string }
     if (!res.ok || !data.url) {
