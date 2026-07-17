@@ -28,7 +28,6 @@ import {
   type RenderShading,
   resolveCdnUrl,
   resolveMaterialRef,
-  useGLTFKTX2,
   useItemLightPool,
   useNodeEvents,
   useViewer,
@@ -40,6 +39,7 @@ import { useFrame } from '@react-three/fiber'
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { AnimationAction, AnimationClip, Group, Material, Mesh, Object3D } from 'three'
 import { MathUtils } from 'three'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { positionLocal, smoothstep, time } from 'three/tsl'
 import { RoofFaceHostFrame } from '../shared/roof-face-host'
 
@@ -382,13 +382,26 @@ const multiplyScales = (
   b: [number, number, number],
 ): [number, number, number] => [a[0] * b[0], a[1] * b[1], a[2] * b[2]]
 
+// Nur das komprimierte exakte Plixa-Haus (`&geo=`) braucht den Meshopt-Decoder.
+// Für normale Katalog-Möbel KEINEN Extend-Loader anhängen — der KTX2/Meshopt-Aufbau
+// von useGLTFKTX2 ließ Möbel als „Broken-Item" (roter Kasten) scheitern und
+// blockierte das Platzieren. Stabile Modul-Funktion, damit useGLTF nicht bei jedem
+// Render neu konfiguriert.
+const HOUSE_ASSET_ID = 'plixa-exact-house'
+function applyMeshoptDecoder(loader: { setMeshoptDecoder: (decoder: typeof MeshoptDecoder) => void }) {
+  loader.setMeshoptDecoder(MeshoptDecoder)
+}
+
 const ModelRenderer = ({ node, markSettled }: { node: ItemNode; markSettled?: () => void }) => {
-  // useGLTFKTX2 (statt reinem useGLTF): aktiviert Draco/KTX2/Meshopt-Decoder, damit
-  // auch komprimierte GLBs laden — insbesondere die Meshopt-komprimierte exakte
-  // Plixa-Hausgeometrie (`&geo=`). Decoder sind in three enthalten (kein externer Host).
-  // useGLTFKTX2 deklariert den breiten drei-Rückgabetyp (nimmt auch Arrays) —
-  // hier immer eine Einzel-URL, deshalb wie in glb-scene strukturell casten.
-  const { scene, nodes, animations } = useGLTFKTX2(resolveCdnUrl(node.asset.src) || '') as unknown as {
+  // Ein einziger, UNBEDINGTER useGLTF-Aufruf; nur die ARGUMENTE hängen vom Item ab:
+  // das exakte Haus lädt mit Meshopt-Decoder, Möbel exakt wie zuvor (Standard).
+  const isHouse = node.asset.id === HOUSE_ASSET_ID
+  const { scene, nodes, animations } = useGLTF(
+    resolveCdnUrl(node.asset.src) || '',
+    undefined,
+    undefined,
+    isHouse ? applyMeshoptDecoder : undefined,
+  ) as unknown as {
     scene: Group
     nodes: Record<string, Object3D>
     animations: AnimationClip[]
