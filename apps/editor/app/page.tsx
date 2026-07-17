@@ -253,8 +253,8 @@ export default function Home() {
           // Struktur sauber bleibt (nur Haus + selbst platzierte Möbel).
           hideHiddenElements: true,
         }}
-        viewerToolbarLeft={<CommunityViewerToolbarLeft />}
-        viewerToolbarRight={<CommunityViewerToolbarRight />}
+        viewerToolbarLeft={<CommunityViewerToolbarLeft simple={inPlixaFlow} />}
+        viewerToolbarRight={<CommunityViewerToolbarRight simple={inPlixaFlow} />}
       />
     </div>
   )
