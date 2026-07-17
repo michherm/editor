@@ -11,8 +11,9 @@ import { EditorLayoutMobile } from './editor-layout-mobile'
 const SIDEBAR_MIN_WIDTH = 300
 const SIDEBAR_MAX_WIDTH = 800
 const SIDEBAR_COLLAPSE_THRESHOLD = 220
-// Matches the `w-14` rail in <IconRail>; the resize math is relative to it.
-const RAIL_WIDTH = 56
+// Matches the labeled section-nav width in <IconRail> (`w-[186px]`); the resize
+// math offsets the detail panel by it. Keep in sync with that class.
+const RAIL_WIDTH = 186
 
 // ── Left column: resizable panel with tab bar ────────────────────────────────
 
@@ -86,7 +87,8 @@ function LeftColumn({
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (!isResizing.current) return
-      // Rail occupies the leftmost 48px; the panel starts after it.
+      // The section nav occupies the leftmost RAIL_WIDTH px; the detail panel
+      // starts after it, so the drag width is measured from there.
       const newWidth = e.clientX - RAIL_WIDTH
       if (newWidth < SIDEBAR_COLLAPSE_THRESHOLD) {
         setIsCollapsed(true)

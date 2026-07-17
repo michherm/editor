@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react'
 import { triggerSFX } from './../../../lib/sfx-bus'
 import { cn } from './../../../lib/utils'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../primitives/tooltip'
 
 export type SidebarTab = {
   id: string
@@ -60,43 +59,49 @@ interface IconRailProps {
 }
 
 /**
- * Vertical icon rail for the v2 left column. Always visible (even when the
- * panel is collapsed) so the user can reopen the panel by clicking an icon.
- * The label renders as a hover tooltip on the right.
+ * Vertical section navigation for the v2 left column — Plixa-style: each entry
+ * is a labeled row (icon + text) rather than an icon-only rail, so the sidebar
+ * reads like the Plixa configurator's calm "Konfiguration" list. Always visible
+ * (even when the detail panel is collapsed) so a click reopens the panel. The
+ * active row gets a soft-amber pill with an amber indicator.
+ *
+ * Width is mirrored by `SECTION_NAV_WIDTH` in `editor-layout-v2` (the resize
+ * math offsets the detail panel by it); keep them in sync.
  */
 export function IconRail({ tabs, activeTab, collapsed, onIconClick }: IconRailProps) {
   return (
-    <TooltipProvider delayDuration={0} disableHoverableContent>
-      <div className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-border/50 border-r py-2">
-        {tabs.map((tab) => {
-          // Only show the active highlight while the panel is open. When
-          // collapsed nothing is "open", so every icon reads as unselected.
-          const showActive = activeTab === tab.id && !collapsed
-          return (
-            <Tooltip key={tab.id}>
-              <TooltipTrigger asChild>
-                <button
-                  className={cn(
-                    'group flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 [&_img]:transition-[opacity,filter] [&_img]:duration-200',
-                    showActive
-                      ? 'bg-accent text-foreground shadow-sm [&_img]:opacity-100 [&_img]:grayscale-0'
-                      : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground [&_img]:opacity-60 [&_img]:grayscale hover:[&_img]:opacity-100 hover:[&_img]:grayscale-0',
-                  )}
-                  onClick={() => {
-                    triggerSFX('sfx:menu-click')
-                    onIconClick(tab.id)
-                  }}
-                  onMouseEnter={() => triggerSFX('sfx:menu-hover')}
-                  type="button"
-                >
-                  {tab.icon ?? tab.label.charAt(0)}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{tab.label}</TooltipContent>
-            </Tooltip>
-          )
-        })}
-      </div>
-    </TooltipProvider>
+    <div className="flex h-full w-[186px] shrink-0 flex-col gap-1 border-sidebar-border border-r bg-sidebar px-2.5 py-3">
+      {tabs.map((tab) => {
+        // Only show the active highlight while the panel is open. When
+        // collapsed nothing is "open", so every row reads as unselected.
+        const showActive = activeTab === tab.id && !collapsed
+        return (
+          <button
+            className={cn(
+              'group relative flex h-11 items-center gap-3 rounded-xl px-2.5 text-left font-medium text-[14px] transition-all duration-200',
+              '[&_img]:!size-[22px] [&_img]:object-contain [&_img]:transition-[opacity,filter] [&_img]:duration-200 [&_svg]:!size-[22px]',
+              showActive
+                ? 'bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-sm [&_img]:opacity-100 [&_img]:grayscale-0'
+                : 'text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground [&_img]:opacity-55 [&_img]:grayscale group-hover:[&_img]:opacity-100 group-hover:[&_img]:grayscale-0',
+            )}
+            key={tab.id}
+            onClick={() => {
+              triggerSFX('sfx:menu-click')
+              onIconClick(tab.id)
+            }}
+            onMouseEnter={() => triggerSFX('sfx:menu-hover')}
+            type="button"
+          >
+            {showActive && (
+              <span className="-translate-y-1/2 absolute top-1/2 left-0 h-5 w-[3px] rounded-full bg-[var(--plixa-amber)]" />
+            )}
+            <span className="flex size-[22px] shrink-0 items-center justify-center">
+              {tab.icon ?? tab.label.charAt(0)}
+            </span>
+            <span className="truncate">{tab.label}</span>
+          </button>
+        )
+      })}
+    </div>
   )
 }
