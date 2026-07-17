@@ -139,13 +139,13 @@ const SHADING_OPTIONS = [
   { id: 'rendered', nameKey: 'renderRendered', detailKey: 'renderRenderedHint', icon: Sparkles },
 ] as const
 
-function ViewModeControl() {
+function ViewModeControl({ modes = VIEW_MODES }: { modes?: typeof VIEW_MODES }) {
   const viewMode = useEditor((state) => state.viewMode)
   const setViewMode = useEditor((state) => state.setViewMode)
 
   return (
     <div className={TOOLBAR_CONTAINER}>
-      {VIEW_MODES.map((mode) => {
+      {modes.map((mode) => {
         const isActive = viewMode === mode.id
         return (
           <ToolbarTooltip key={mode.id} label={mode.label}>
@@ -600,16 +600,41 @@ function PreviewButton() {
   )
 }
 
-export function CommunityViewerToolbarLeft() {
+// VIEW_MODES ohne „Split" — für den vereinfachten (Plixa-)Modus, in dem der
+// geteilte 3D/2D-Blick einen Laien nur verwirrt.
+const SIMPLE_VIEW_MODES = VIEW_MODES.filter((m) => m.id !== 'split')
+
+/**
+ * @param simple  Vereinfachte Leiste für den Plixa-/Laien-Kontext: nur 3D/2D
+ *   (kein Split). Die technischen Schalter entfallen (siehe rechte Leiste).
+ */
+export function CommunityViewerToolbarLeft({ simple = false }: { simple?: boolean }) {
   return (
     <>
       <CollapseSidebarButton />
-      <ViewModeControl />
+      <ViewModeControl modes={simple ? SIMPLE_VIEW_MODES : VIEW_MODES} />
     </>
   )
 }
 
-export function CommunityViewerToolbarRight() {
+/**
+ * @param simple  Vereinfachte Leiste für den Plixa-/Laien-Kontext: nur die zum
+ *   Möblieren nötigen Blick-Hilfen — „Dach ausblenden / Blick hinein", „Begehen"
+ *   und „Vorschau". Die technischen Schalter (Etagen-Modus, Wand-Modus,
+ *   Anzeige-Einstellungen) entfallen, damit die Oberfläche ruhig bleibt.
+ */
+export function CommunityViewerToolbarRight({ simple = false }: { simple?: boolean }) {
+  if (simple) {
+    return (
+      <div className={TOOLBAR_CONTAINER}>
+        <SectionControl />
+        <div className="my-1.5 w-px bg-border/50" />
+        <WalkthroughButton />
+        <PreviewButton />
+      </div>
+    )
+  }
+
   return (
     <div className={TOOLBAR_CONTAINER}>
       <LevelModeToggle />
