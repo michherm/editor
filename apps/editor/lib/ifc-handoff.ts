@@ -217,31 +217,19 @@ async function measureGeoAabb(
 }
 
 /**
- * Das exakte-Haus-Item einer WIEDERHERGESTELLTEN Sitzung neu zentrieren: die im
- * Session-JSON gespeicherte Position wird NICHT vertraut (frühere Versionen haben
- * sie evtl. aus Plixas ungenauer `&geobbox=` gesetzt → Haus versetzt, Möbel
- * daneben). Wir messen die exakte Geometrie neu und korrigieren Position/Maße.
- * Möbel liegen auf dem Nullpunkt-Raster; das Haus wieder mittig auf den Nullpunkt
- * zu setzen richtet also auch bestehende, versetzte Sitzungen wieder aus.
- * Best-effort: schlägt das Messen fehl, bleibt die gespeicherte Position.
+ * Beim Wiederherstellen einer Sitzung das exakte-Haus-Item auf ORIGINAL-Welt-
+ * koordinaten setzen (Position [0,0,0]). Frühere Versionen haben das Haus zentriert
+ * gespeichert (auf den Nullpunkt verschoben) — dadurch kamen platzierte Objekte beim
+ * Rückweg (?result=) versetzt bei Plixa an. Das Haus NICHT zu verschieben hält den
+ * Editor-Frame identisch mit den Plixa-Weltkoordinaten. Synchron (kein Neu-Laden).
  */
-async function recenterExactHouse(nodes: Record<string, unknown>): Promise<void> {
+function resetExactHousePosition(nodes: Record<string, unknown>): void {
   const house = Object.values(nodes).find(
     (n) =>
       (n as { type?: string }).type === 'item' &&
       (n as { asset?: { id?: string } }).asset?.id === 'plixa-exact-house',
-  ) as { position?: unknown; asset?: { src?: string; dimensions?: unknown } } | undefined
-  const src = house?.asset?.src
-  if (!house || !src) return
-  try {
-    const buf = await fetchGeoGlb(src)
-    const { center, size, minY } = await measureGeoAabb(buf)
-    house.position = [-center[0], -minY, -center[2]]
-    if (house.asset) house.asset.dimensions = size
-    console.info('[plixa session] Haus neu zentriert (selbst-gemessen).')
-  } catch (e) {
-    console.warn('[plixa session] Haus-Neuzentrierung übersprungen:', e)
-  }
+  ) as { position?: unknown } | undefined
+  if (house) house.position = [0, 0, 0]
 }
 
 async function attachExactGeometry(
@@ -253,14 +241,15 @@ async function attachExactGeometry(
   onProgress?.('Exakte Geometrie …', 92)
   console.info(`[plixa geo] GLB geladen: ${(buf.byteLength / 1e6).toFixed(1)} MB`)
 
-  // Zentrierung + Grundriss-Maße IMMER aus dem TATSÄCHLICH geladenen Modell
-  // messen (selbst-gemessen = garantiert deckungsgleich). Plixas `&geobbox=` wird
-  // BEWUSST nicht zum Positionieren genutzt: liegt sie auch nur leicht daneben,
-  // sitzt das Haus versetzt zum Nullpunkt und platzierte Möbel stehen daneben.
-  const { center, size, minY } = await measureGeoAabb(buf)
+  // Das Haus wird NICHT verschoben — es bleibt in seinen ORIGINAL-Weltkoordinaten
+  // (Item-Position [0,0,0], das GLB rendert an seinen nativen Koordinaten). Grund:
+  // platzierte Objekte müssen im SELBEN Frame wie die gelieferte geo-GLB liegen,
+  // sonst kommen sie beim Rückweg (?result=) um die BBox-Mitte (~halbe Hausbreite)
+  // versetzt bei Plixa an. Wir messen nur die Größe fürs Gizmo/Grundriss
+  // (Meshopt-fähig); Zentrum/Boden werden bewusst NICHT zum Verschieben genutzt.
+  const { size } = await measureGeoAabb(buf)
   console.info(
-    `[plixa geo] Bounding-Box (m): ${size[0].toFixed(1)} × ${size[1].toFixed(1)} × ${size[2].toFixed(1)}` +
-      ` — Zentrum [${center[0].toFixed(1)}, ${center[1].toFixed(1)}, ${center[2].toFixed(1)}]`,
+    `[plixa geo] Größe (m): ${size[0].toFixed(1)} × ${size[1].toFixed(1)} × ${size[2].toFixed(1)}`,
   )
 
   type Levelish = {
@@ -277,8 +266,9 @@ async function attachExactGeometry(
 
   const item = ItemNode.parse({
     name: 'Plixa Haus (exakt)',
-    // XZ auf Ursprung zentrieren, Basis auf den Boden der untersten Ebene setzen.
-    position: [-center[0], -minY, -center[2]],
+    // NICHT verschieben: Original-Weltkoordinaten der geo-GLB beibehalten, damit
+    // platzierte Objekte im selben Frame liegen und der Rückweg exakt überlagert.
+    position: [0, 0, 0],
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     parentId: ground?.id ?? null,
@@ -425,9 +415,9 @@ export function createSessionOnLoad(
       }
       // Flächen-Belegungen (Dachziegel/Tapete/…) aus der Sitzung wiederherstellen.
       hydrateFinishes(parsed.plixaFinishes)
-      // Das exakte Haus neu zentrieren (gespeicherte Position nicht vertrauen) —
-      // richtet auch bestehende, versetzte Sitzungen wieder aus.
-      await recenterExactHouse(parsed.nodes as Record<string, unknown>)
+      // Das exakte Haus auf Original-Weltkoordinaten [0,0,0] setzen (gespeicherte,
+      // evtl. zentrierte Position nicht vertrauen) — hält den Frame Plixa-konform.
+      resetExactHousePosition(parsed.nodes as Record<string, unknown>)
       onProgress?.('Bearbeitung wiederhergestellt', 100)
       return {
         nodes: parsed.nodes,
