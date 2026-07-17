@@ -1,8 +1,30 @@
 import type { NextConfig } from 'next'
 
+// Origins, die den Editor in einem iframe einbetten dürfen (Plixa bettet ihn als
+// Vollbild-iframe ein, statt wegzunavigieren). `frame-ancestors` ersetzt das alte
+// X-Frame-Options und erlaubt gezielt nur diese Origins — kein DENY/SAMEORIGIN,
+// sonst würde das Framing scheitern. `*.vercel.app` deckt die Plixa-Preview- und
+// Prod-Deployments ab; localhost fürs lokale Testen.
+const FRAME_ANCESTORS = [
+  "'self'",
+  'https://plixa-ten.vercel.app',
+  'https://*.vercel.app',
+  'http://localhost:3000',
+].join(' ')
+
 const nextConfig: NextConfig = {
   logging: {
     browserToTerminal: true,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Security-Policy', value: `frame-ancestors ${FRAME_ANCESTORS}` },
+        ],
+      },
+    ]
   },
   typescript: {
     ignoreBuildErrors: true,

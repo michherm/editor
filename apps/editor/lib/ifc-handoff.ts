@@ -85,6 +85,45 @@ export function readSurfacesHandoffUrl(): string | null {
   }
 }
 
+/**
+ * Erkennt die Einbettung (`&embed=1`). Plixa bettet den Editor als Vollbild-iframe
+ * ein statt wegzunavigieren. Ist das gesetzt, wird der Rückweg NICHT über eine
+ * Navigation zu `?result=` gemacht, sondern per `postMessage` ans Elternfenster
+ * (siehe back-to-plixa-button). Das LADEN bleibt unverändert (ifc/geo/session/…).
+ */
+export function readEmbedFlag(): boolean {
+  return readParam('embed') === '1'
+}
+
+/**
+ * Bestimmt das Ziel-Origin fürs `postMessage` an das einbettende Plixa-Fenster.
+ * Nimmt das Origin der `return`-URL (die genaue Plixa-Adresse, auf der der Nutzer
+ * plant) und lässt — wie beim CSP `frame-ancestors` — nur `https`-`*.vercel.app`
+ * oder lokales `localhost`/`127.0.0.1` zu; sonst der `document.referrer` als
+ * zweite Quelle. Bewusst NICHT `'*'` (kein Streuen der R2-URLs an fremde Origins).
+ * Fällt nichts Gültiges an, `null` → der Aufrufer nutzt den Konfigurator-Origin.
+ */
+export function resolvePlixaParentOrigin(): string | null {
+  if (typeof window === 'undefined') return null
+  const isAllowed = (u: URL): boolean => {
+    const host = u.hostname.toLowerCase()
+    if (u.protocol === 'https:') return host === 'vercel.app' || host.endsWith('.vercel.app')
+    if (u.protocol === 'http:') return host === 'localhost' || host === '127.0.0.1'
+    return false
+  }
+  const candidates = [readParam('return'), window.document.referrer || null]
+  for (const raw of candidates) {
+    if (!raw) continue
+    try {
+      const u = new URL(raw)
+      if (isAllowed(u)) return u.origin
+    } catch {
+      // ungültige URL — nächste Quelle probieren
+    }
+  }
+  return null
+}
+
 function readParam(name: string): string | null {
   if (typeof window === 'undefined') return null
   const value = new URLSearchParams(window.location.search).get(name)

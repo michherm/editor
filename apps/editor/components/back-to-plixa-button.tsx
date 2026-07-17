@@ -15,9 +15,34 @@ import { exportSceneToGlb, nextFrames, useScene, useViewer } from '@pascal-app/e
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getFinishAssignments } from '@/lib/calc/finishes-store'
-import { readProjectHandoffId } from '@/lib/ifc-handoff'
+import { readEmbedFlag, readProjectHandoffId, resolvePlixaParentOrigin } from '@/lib/ifc-handoff'
 
 const PLIXA_KONFIGURATOR_URL = 'https://plixa-ten.vercel.app/konfigurator'
+const PLIXA_KONFIGURATOR_ORIGIN = new URL(PLIXA_KONFIGURATOR_URL).origin
+
+/**
+ * Rückweg im EINGEBETTETEN Modus (`&embed=1`): Ergebnis-GLB + Sitzung per
+ * `postMessage` ans Plixa-Elternfenster geben, statt wegzunavigieren — der Kunde
+ * bleibt gefühlt in EINEM Werkzeug. Ziel-Origin = Origin der `return`-URL (nie
+ * `'*'`, sonst würden die R2-URLs an beliebige Origins gestreut); fällt nichts
+ * Gültiges an, der Konfigurator-Origin als sichere Rückfallebene. Plixa akzeptiert
+ * nur Nachrichten vom Editor-Origin — wir empfangen nichts, wir posten nur.
+ */
+function postResultToPlixaParent(resultUrl: string, sessionUrl: string | null): void {
+  if (typeof window === 'undefined' || window.parent === window) return
+  const target = resolvePlixaParentOrigin() ?? PLIXA_KONFIGURATOR_ORIGIN
+  window.parent.postMessage(
+    {
+      type: 'plixa-editor:result',
+      result: resultUrl,
+      session: sessionUrl ?? undefined,
+      // items: Schritt 2 — zählbare Stückliste (Struktur + Ausbau + Möbel/Deko)
+      // mit Katalog-Artikel-IDs folgt; wird hier ergänzt, sobald definiert.
+    },
+    target,
+  )
+  console.info(`[plixa handoff] Ergebnis an Plixa gepostet (${target})`)
+}
 
 /**
  * Ziel-URL für die Rückkehr zu Plixa bestimmen. Plixa hängt an die Editor-URL
@@ -202,6 +227,16 @@ export function BackToPlixaButton() {
       const sessionUrl = await uploadSessionScene()
       if (sessionUrl) {
         console.info(`[plixa handoff] Sitzung gespeichert: ${sessionUrl}`)
+      }
+
+      // Eingebettet (`&embed=1`): NICHT wegnavigieren, sondern Ergebnis + Sitzung
+      // ans Plixa-Elternfenster posten (der Kunde bleibt in Plixa; Plixa schließt
+      // das Overlay). Ohne `embed=1` weiterhin der alte Weg: Navigation zu
+      // `?result=` (abwärtskompatibler Fallback).
+      if (readEmbedFlag()) {
+        postResultToPlixaParent(data.url, sessionUrl)
+        setBusy(false)
+        return
       }
 
       window.location.href = buildReturnUrl(data.url, sessionUrl)
