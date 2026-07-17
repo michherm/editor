@@ -284,9 +284,14 @@ async function attachExactGeometry(
     rotation: [0, 0, 0],
     scale: [1, 1, 1],
     parentId: ground?.id ?? null,
-    // Wahres Welt-Footprint fürs Kamera-Einrahmen (siehe oben). Rein informativ,
-    // beeinflusst das Rendering NICHT.
-    metadata: { worldBoundsXZ },
+    // metadata.worldBoundsXZ: wahres Welt-Footprint fürs Kamera-Einrahmen (siehe
+    // oben) — rein informativ, beeinflusst das Rendering NICHT.
+    // metadata.backdrop: Das exakte Haus ist eine STATISCHE Referenz-Geometrie,
+    // kein Möbelstück. Ohne diese Markierung zählt sein riesiges Grundriss-
+    // Rechteck (die ganze Hausausdehnung) als Boden-Kollision → man könnte NICHTS
+    // im/ums Haus ablegen (Pflanze, Ball, Bett bleiben am Cursor kleben). Als
+    // Backdrop nimmt es weder an Boden-Kollision noch am Ebenen-Lift teil.
+    metadata: { worldBoundsXZ, backdrop: true },
     asset: {
       id: 'plixa-exact-house',
       category: 'building',

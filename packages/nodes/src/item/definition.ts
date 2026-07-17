@@ -225,7 +225,16 @@ export const itemDefinition: NodeDefinition<typeof ItemNode> = {
         const item = node as ItemNodeType
         return { dimensions: getScaledDimensions(item), rotation: item.rotation }
       },
-      applies: (node) => !(node as ItemNodeType).asset.attachTo,
+      // Wall- / ceiling-attached items live in their host's frame (skip the lift
+      // + collision). A `backdrop` item is a STATIC reference mesh (e.g. an
+      // imported exact-geometry house shown as one baked GLB) — never a floor
+      // obstacle: its huge footprint must not block placing furniture on or
+      // around it, and it isn't lifted by slabs.
+      applies: (node) => {
+        const item = node as ItemNodeType
+        if (item.asset.attachTo) return false
+        return !(item.metadata as { backdrop?: boolean } | undefined)?.backdrop
+      },
       collides: true,
     },
     // Recessed ceiling fixtures cut a hole in their host ceiling. The viewer's
