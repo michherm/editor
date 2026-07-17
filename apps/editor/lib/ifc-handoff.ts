@@ -158,19 +158,34 @@ const GEOMETRY_NODE_TYPES = new Set([
  * Größenlimit des Same-Origin-Proxys `/api/ifc` bei großen Häusern. Nur wenn der
  * Direktabruf scheitert (CORS/Netz), wird über den Proxy nachgeladen.
  */
-async function fetchGeoGlb(geoUrl: string): Promise<ArrayBuffer> {
+/**
+ * Übergabe-Datei (geo/ifc) PRIMÄR direkt von R2 laden (öffentliche r2.dev-URL,
+ * GET-CORS) — spart den Proxy-Umweg und dessen Größenlimit. Nur wenn der
+ * Direktabruf scheitert (CORS/Netz), über den Same-Origin-Proxy `/api/ifc`.
+ *
+ * KEIN no-store: Plixa vergibt inhaltsbezogene URLs (geänderter Inhalt = neue
+ * URL), der Browser darf also nach URL cachen — beschleunigt Reload/Wiederaufruf,
+ * und beim geo-GLB bedient der Cache den zweiten Abruf des Item-Renderers
+ * (useGLTF), statt die große Datei doppelt zu ziehen.
+ */
+async function fetchHandoffArrayBuffer(url: string, label: string): Promise<ArrayBuffer> {
   try {
-    // KEIN no-store: dieselbe URL lädt der Item-Renderer (useGLTF) gleich erneut;
-    // der Browser-HTTP-Cache bedient den zweiten Abruf, statt 57 MB doppelt zu ziehen.
-    const direct = await fetch(geoUrl)
+    const direct = await fetch(url)
     if (direct.ok) return await direct.arrayBuffer()
-    console.warn(`[plixa geo] Direkt-Abruf R2 nicht ok (HTTP ${direct.status}) → Proxy-Fallback`)
+    console.warn(`[plixa ${label}] Direkt-Abruf R2 nicht ok (HTTP ${direct.status}) → Proxy-Fallback`)
   } catch (e) {
-    console.warn('[plixa geo] Direkt-Abruf R2 fehlgeschlagen (CORS/Netz) → Proxy-Fallback', e)
+    console.warn(`[plixa ${label}] Direkt-Abruf R2 fehlgeschlagen (CORS/Netz) → Proxy-Fallback`, e)
   }
-  const res = await fetch(`/api/ifc?u=${encodeURIComponent(geoUrl)}`)
-  if (!res.ok) throw new Error(`GLB-Download fehlgeschlagen (${res.status})`)
+  const res = await fetch(`/api/ifc?u=${encodeURIComponent(url)}`)
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '')
+    throw new Error(`${label}-Download fehlgeschlagen (${res.status}) ${detail}`.trim())
+  }
   return res.arrayBuffer()
+}
+
+function fetchGeoGlb(geoUrl: string): Promise<ArrayBuffer> {
+  return fetchHandoffArrayBuffer(geoUrl, 'geo')
 }
 
 async function attachExactGeometry(
@@ -277,12 +292,9 @@ export function createIfcOnLoad(
 
     try {
       onProgress?.('Lade IFC …', 2)
-      const res = await fetch(`/api/ifc?u=${encodeURIComponent(ifcUrl)}`, { cache: 'no-store' })
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '')
-        throw new Error(`IFC-Download fehlgeschlagen (${res.status}) ${detail}`.trim())
-      }
-      const buf = await res.arrayBuffer()
+      // Hebel 4: die IFC direkt von R2 holen (Plixa liefert sie als öffentliche
+      // r2.dev-URL) — nur bei CORS/Netz-Fehler über den Proxy. Spart den Umweg.
+      const buf = await fetchHandoffArrayBuffer(ifcUrl, 'IFC')
 
       const { convertIfcToPascal } = await converterPromise
       const graph = await convertIfcToPascal(new Uint8Array(buf), onProgress)
