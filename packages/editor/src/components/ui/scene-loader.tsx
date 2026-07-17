@@ -1,29 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { cn } from '../../lib/utils'
-
-const LOADERS = [
-  'pascal-loader-1',
-  'pascal-loader-2',
-  'pascal-loader-3',
-  'pascal-loader-4',
-  'pascal-loader-5',
-]
 
 interface SceneLoaderProps {
   className?: string
   fullScreen?: boolean
 }
 
+/**
+ * Einheitlicher Warte-Indikator: immer die drei senkrechten Balken, die hoch und
+ * runter laufen (`pascal-loader-2`) — bewusst NICHT mehr zufällig gewählt, damit
+ * überall im Editor dasselbe „Wartesystem" erscheint (wie im Import-Overlay und
+ * am „Zurück zu Plixa"-Knopf). Farbe: Plixa-Amber, Fallback auf currentColor.
+ */
 export function SceneLoader({ className, fullScreen = false }: SceneLoaderProps) {
-  const [loaderClass, setLoaderClass] = useState(LOADERS[0]!)
-
-  useEffect(() => {
-    // Pick a random loader on mount
-    setLoaderClass(LOADERS[Math.floor(Math.random() * LOADERS.length)] ?? LOADERS[0]!)
-  }, [])
-
   return (
     <div
       className={cn(
@@ -32,7 +22,10 @@ export function SceneLoader({ className, fullScreen = false }: SceneLoaderProps)
         className,
       )}
     >
-      <div className={cn(loaderClass, 'text-foreground opacity-80')} />
+      <div
+        className="pascal-loader-2 opacity-90"
+        style={{ color: 'var(--plixa-amber, currentColor)' }}
+      />
     </div>
   )
 }

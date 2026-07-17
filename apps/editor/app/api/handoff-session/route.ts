@@ -14,6 +14,7 @@
  * Env-Variablen).
  */
 import { randomUUID } from 'node:crypto'
+import { gunzipSync } from 'node:zlib'
 import { r2PutObject } from '@/lib/r2-upload'
 
 export const runtime = 'nodejs'
@@ -43,7 +44,14 @@ export async function POST(request: Request): Promise<Response> {
     finishes?: unknown
   }
   try {
-    payload = await request.json()
+    // Body kann gzip-komprimiert ankommen (der Client packt große Szenen, damit
+    // sie nicht an Vercels Request-Limit scheitern). Am gzip-Magic (1f 8b)
+    // erkennen und auspacken; sonst als reines JSON lesen.
+    const raw = Buffer.from(await request.arrayBuffer())
+    if (raw.byteLength === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
+    const isGzip = raw.length >= 2 && raw[0] === 0x1f && raw[1] === 0x8b
+    const text = isGzip ? gunzipSync(raw).toString('utf8') : raw.toString('utf8')
+    payload = JSON.parse(text)
   } catch {
     return Response.json({ error: 'bad_request' }, { status: 400 })
   }
