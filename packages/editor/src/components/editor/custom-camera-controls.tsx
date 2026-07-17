@@ -1142,10 +1142,13 @@ export const CustomCameraControls = () => {
       const [cx, cz] = bounds.center
       const [w, d] = bounds.size
       // Use the longer horizontal extent to size the orbit radius so the whole
-      // footprint sits in view regardless of aspect ratio.
+      // footprint sits in view regardless of aspect ratio. The multipliers are
+      // deliberately generous so a freshly loaded scene lands with comfortable
+      // margin around it (a bit zoomed out) rather than filling the frame edge
+      // to edge — a house then reads at a pleasant on-screen size straight away.
       const maxExtent = Math.max(w, d)
-      const distance = Math.max(maxExtent * 1.4, 15)
-      const height = Math.max(maxExtent * 0.8, 10)
+      const distance = Math.max(maxExtent * 2.1, 18)
+      const height = Math.max(maxExtent * 1.1, 12)
       clearPendingFloorplanNavigationPose()
       controls.current.setLookAt(cx + distance * 0.7, height, cz + distance * 0.7, cx, 0, cz, true)
     }
