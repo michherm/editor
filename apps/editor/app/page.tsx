@@ -1,6 +1,6 @@
 'use client'
 
-import { Editor, frameCurrentScene, ItemsPanel } from '@pascal-app/editor'
+import { Editor, frameCurrentScene, ItemsPanel, useViewer } from '@pascal-app/editor'
 import { Calculator, Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -147,6 +147,17 @@ export default function Home() {
   // Dann die eigenständigen Editor-Hinweise (Lokaler-Editor-Banner, Start-Tipp)
   // ausblenden — sie sind dort Rauschen und überlappen die Werkzeugleisten.
   const inPlixaFlow = embedded || !!ifcUrl || !!sessionUrl
+  // Performance: Das exakte Plixa-Haus ist EIN sehr detailreiches, hoch-polygonales
+  // GLB. Kanten-Umrandung (edges) und Schatten kosten darauf pro Frame besonders
+  // viel und lassen schwächere Rechner ruckeln. Im Plixa-Ablauf deshalb beides
+  // standardmäßig aus — flüssiger. Der Nutzer kann es über „Ansicht" wieder
+  // einschalten. Einmalig beim Öffnen setzen.
+  useEffect(() => {
+    if (!inPlixaFlow) return
+    const v = useViewer.getState()
+    v.setEdges('off')
+    v.setShadows(false)
+  }, [inPlixaFlow])
   useEffect(() => {
     if (!surfacesUrl) return
     let cancelled = false
