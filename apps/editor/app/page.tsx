@@ -1,6 +1,6 @@
 'use client'
 
-import { Editor, ItemsPanel } from '@pascal-app/editor'
+import { Editor, frameCurrentScene, ItemsPanel } from '@pascal-app/editor'
 import { Calculator, Hammer, Layers, Package, Settings } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -236,7 +236,14 @@ export default function Home() {
         projectId={PROJECT_ID}
         onLoad={onLoad}
         onLoaderChange={(visible) => {
-          if (!visible) setImportProgress(null)
+          if (visible) return
+          setImportProgress(null)
+          // Nach dem Laden das Haus explizit einrahmen. Der Editor tauscht die
+          // Startszene per onLoad gegen das Plixa-Haus — die automatische
+          // Einrahmung (nur leer→gefüllt) verpasst diesen Austausch, sodass die
+          // Kamera sonst in ihrer engen Standardpose „im Haus" stecken bliebe.
+          // Kurz verzögert, damit Szene UND Kamera-Controls bereit sind.
+          window.setTimeout(() => frameCurrentScene(), 150)
         }}
         sidebarTabs={sidebarTabs}
         navbarSlot={<PlixaNavbar embedded={embedded} />}

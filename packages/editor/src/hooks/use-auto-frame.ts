@@ -43,3 +43,18 @@ export function useAutoFrame(): void {
     return unsubscribe
   }, [])
 }
+
+/**
+ * Imperatively frame the camera onto whatever is CURRENTLY in the scene store.
+ *
+ * `useAutoFrame` only reacts to an empty → non-empty edge, which a host that
+ * SWAPS one scene for another (e.g. the editor replacing a bootstrap scene with
+ * an imported house via `onLoad`) never crosses — so the imported scene would
+ * keep the default camera pose. Call this after such a load completes to force a
+ * correct fit. Safe to call any time; a null-bounds scene falls back to the
+ * camera's default pose.
+ */
+export function frameCurrentScene(): void {
+  const bounds = computeSceneBoundsXZ(useScene.getState().nodes)
+  emitter.emit('camera-controls:fit-scene', bounds ? { bounds } : {})
+}
