@@ -1147,8 +1147,8 @@ export const CustomCameraControls = () => {
       // margin around it (a bit zoomed out) rather than filling the frame edge
       // to edge — a house then reads at a pleasant on-screen size straight away.
       const maxExtent = Math.max(w, d)
-      const distance = Math.max(maxExtent * 2.1, 18)
-      const height = Math.max(maxExtent * 1.1, 12)
+      const distance = Math.max(maxExtent * 2.6, 20)
+      const height = Math.max(maxExtent * 1.3, 13)
       clearPendingFloorplanNavigationPose()
       controls.current.setLookAt(cx + distance * 0.7, height, cz + distance * 0.7, cx, 0, cz, true)
     }

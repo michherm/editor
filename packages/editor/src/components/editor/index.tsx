@@ -397,13 +397,16 @@ const CAMERA_SHORTCUT_KEY_META: Record<string, { icon?: string; label: string; t
 
 function readCameraControlsHintDismissed(): boolean {
   if (typeof window === 'undefined') {
-    return false
+    return true
   }
 
   try {
-    return window.localStorage.getItem(CAMERA_CONTROLS_HINT_DISMISSED_STORAGE_KEY) === '1'
+    // Default to DISMISSED so the viewport starts clean (Plixa look) — the
+    // floating Pan/Rotate/Zoom hint no longer greets every fresh load. It only
+    // reappears if something explicitly stores '0' (opt back in).
+    return window.localStorage.getItem(CAMERA_CONTROLS_HINT_DISMISSED_STORAGE_KEY) !== '0'
   } catch {
-    return false
+    return true
   }
 }
 
@@ -1338,12 +1341,13 @@ export default function Editor({
     }
 
     const tabBarTabs = [
-      ...(sidebarTabs?.map(({ id, label, mobileDefaultSnap, mobileIcon, icon }) => ({
+      ...(sidebarTabs?.map(({ id, label, mobileDefaultSnap, mobileIcon, icon, align }) => ({
         id,
         label,
         mobileDefaultSnap,
         mobileIcon,
         icon,
+        align,
       })) ?? []),
       // Plugin panels appear after the host's tabs in the rail. The icon
       // doubles as the mobile icon; a half-height sheet is a sensible default.

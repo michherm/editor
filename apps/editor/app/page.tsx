@@ -20,6 +20,7 @@ import {
   createIfcOnLoad,
   createSessionOnLoad,
   discardEditorCache,
+  readEmbedFlag,
   readGeoHandoffUrl,
   readIfcHandoffUrl,
   readSessionHandoffUrl,
@@ -94,6 +95,8 @@ const SIDEBAR_TAB_CONFIG = [
     mobileDefaultSnap: 0.5,
     mobileIcon: <Calculator className="h-5 w-5" />,
     icon: <Calculator className="h-7 w-7" strokeWidth={1.5} />,
+    // Hilfs-/Auswertungsbereiche sitzen unten in der Nav (Plixa-Anordnung).
+    align: 'bottom',
   },
   {
     id: 'settings',
@@ -110,6 +113,7 @@ const SIDEBAR_TAB_CONFIG = [
         width={32}
       />
     ),
+    align: 'bottom',
   },
 ] as const
 
@@ -136,6 +140,13 @@ export default function Home() {
   // Flächen-Manifest (`&surfaces=`): Dach/Wände/Böden/Decken mit exakten m² —
   // Grundlage fürs Belegen und die Kalkulation. Kommt bei jedem „Gestalten" frisch.
   const [surfacesUrl] = useState<string | null>(() => readSurfacesHandoffUrl())
+  // Eingebettet in Plixa (iframe, `&embed=1`)? Dann die Editor-Kopfzeile schlank
+  // halten (Plixa liefert Logo/Sprache/Kopf schon selbst).
+  const [embedded] = useState<boolean>(() => readEmbedFlag())
+  // „In einem Plixa-Ablauf" = eingebettet ODER per Übergabe/Fortsetzung geöffnet.
+  // Dann die eigenständigen Editor-Hinweise (Lokaler-Editor-Banner, Start-Tipp)
+  // ausblenden — sie sind dort Rauschen und überlappen die Werkzeugleisten.
+  const inPlixaFlow = embedded || !!ifcUrl || !!sessionUrl
   useEffect(() => {
     if (!surfacesUrl) return
     let cancelled = false
@@ -193,7 +204,10 @@ export default function Home() {
           error={importError}
         />
       )}
-      {PROJECT_ID === 'local-editor' && (
+      {/* Lokaler-Editor-Banner + Start-Hinweis nur im eigenständigen Editor. In
+          jedem Plixa-Kontext (eingebettet oder per ?ifc/?session geöffnet) sind
+          sie Rauschen und überlappen die oberen Werkzeugleisten — dann weg. */}
+      {!inPlixaFlow && PROJECT_ID === 'local-editor' && (
         <div className="pointer-events-none absolute top-16 left-1/2 z-40 hidden -translate-x-1/2 lg:block">
           <div className="plixa-card plixa-rise pointer-events-auto flex items-center gap-3 rounded-full px-4 py-1.5 text-xs">
             <span className="text-muted-foreground">{t('app.localScenes')}</span>
@@ -210,11 +224,13 @@ export default function Home() {
         </div>
       )}
       {/* Dezenter Start-Hinweis: was man hier tun kann (nur Desktop, unten mittig). */}
-      <div className="pointer-events-none absolute bottom-24 left-1/2 z-30 hidden -translate-x-1/2 lg:block">
-        <div className="plixa-card plixa-rise rounded-full px-3.5 py-1.5 text-[11px] text-muted-foreground">
-          {t('app.startHint')}
+      {!inPlixaFlow && (
+        <div className="pointer-events-none absolute bottom-24 left-1/2 z-30 hidden -translate-x-1/2 lg:block">
+          <div className="plixa-card plixa-rise rounded-full px-3.5 py-1.5 text-[11px] text-muted-foreground">
+            {t('app.startHint')}
+          </div>
         </div>
-      </div>
+      )}
       <Editor
         layoutVersion="v2"
         projectId={PROJECT_ID}
@@ -223,7 +239,7 @@ export default function Home() {
           if (!visible) setImportProgress(null)
         }}
         sidebarTabs={sidebarTabs}
-        navbarSlot={<PlixaNavbar />}
+        navbarSlot={<PlixaNavbar embedded={embedded} />}
         sitePanelProps={{
           // Eigene 3D-Modelle (.glb/.gltf) lokal laden — freies Programm, kein
           // Backend nötig. Bilder (Grundriss/Scan) laufen bereits lokal.
