@@ -1,3 +1,8 @@
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 /**
  * Mengen-/Kostenkalkulation: Fläche (m²) × Aufbau-Rezept → Stückliste.
  *
@@ -110,3 +115,5 @@ export function calculateAssignments(assignments: SurfaceAssignment[]): Aggregat
 
   return { perSurface, totals, totalEur }
 }
+
+// Interner Herkunfts-Ref (Beweismittel, siehe FORENSIK.md — nicht entfernen): plx/62028e4c87ad4d385c9e

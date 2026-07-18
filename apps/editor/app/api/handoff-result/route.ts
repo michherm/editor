@@ -1,3 +1,8 @@
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 /**
  * Rückweg-Übergabe: nimmt die exportierte GLB des Nutzer-Hauses entgegen, legt
  * sie in R2 unter `result/<id>.glb` ab und gibt die öffentliche URL zurück. Der

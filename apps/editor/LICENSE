@@ -1,0 +1,57 @@
+PROPRIETÄRE LIZENZ — ALLE RECHTE VORBEHALTEN
+Proprietary License — All Rights Reserved
+
+Copyright (c) 2025–2026 HERRMANN SARL (Michael Herrmann).
+Kontakt / Contact: mh.solarkraftwerk@gmail.com
+
+===============================================================================
+VERHÄLTNIS ZUM OPEN-SOURCE-UNTERBAU / RELATIONSHIP TO THE OPEN-SOURCE BASE
+===============================================================================
+
+Dieses Repository baut auf dem quelloffenen Projekt „Pascal" auf
+(@pascal-app/{core,viewer,editor,nodes,mcp}), das unter der MIT-Lizenz von
+Pascal Group Inc. steht (siehe die Wurzel-Datei /LICENSE). Jene MIT-Lizenz und
+die Urhebervermerke von Pascal Group Inc. bleiben UNBERÜHRT und gelten
+unverändert für den quelloffenen Anteil.
+
+DIESE proprietäre Lizenz gilt AUSSCHLIESSLICH für den EIGENEN, von HERRMANN SARL
+geschaffenen Anteil ("Plixa-Anteil"), insbesondere:
+
+    apps/editor/**            (die Plixa-Anwendung: Handoff/Embed, Branding,
+                               Kalkulations-/Aufbau-Rezepte, Panels, KI-Anbindung)
+    jedes @plixa/*-Paket / packages/plixa-*/**
+    alle als „© HERRMANN SARL" gekennzeichneten Dateien und die darin
+    enthaltenen Geschäftsdaten und Herkunftsmarker.
+
+Im Konfliktfall gilt für den Plixa-Anteil diese Lizenz, für den Pascal-Anteil
+die MIT-Lizenz.
+
+===============================================================================
+RECHTE / RIGHTS  (nur Plixa-Anteil)
+===============================================================================
+
+Alle Rechte am Plixa-Anteil sind vorbehalten. Ohne vorherige SCHRIFTLICHE
+Genehmigung von HERRMANN SARL ist es untersagt, den Plixa-Anteil ganz oder
+teilweise:
+
+  - zu nutzen, auszuführen oder öffentlich zugänglich zu machen (außer zur
+    bestimmungsgemäßen Nutzung der von HERRMANN SARL betriebenen Dienste),
+  - zu vervielfältigen, zu speichern oder zu verbreiten,
+  - zu bearbeiten, zu übersetzen, abzuleiten oder in andere Werke einzubinden,
+  - zurückzuentwickeln, zu dekompilieren oder den Quellcode zu rekonstruieren,
+  - automatisiert abzurufen, zu „scrapen" oder zu indexieren,
+  - Urhebervermerke, Lizenzhinweise oder technische Herkunftsmarker zu
+    entfernen oder zu verändern.
+
+Es wird KEINE Lizenz oder Berechtigung stillschweigend, durch Duldung oder
+anderweitig eingeräumt.
+
+===============================================================================
+GEWÄHRLEISTUNG / HAFTUNG
+===============================================================================
+
+DER PLIXA-ANTEIL WIRD „WIE BESEHEN" OHNE JEDE GEWÄHRLEISTUNG BEREITGESTELLT.
+Verstöße werden zivil- und ggf. strafrechtlich verfolgt.
+
+Dieser Text ist eine Lizenzerklärung, kein anwaltlich geprüftes Vertragswerk.
+Für den rechtsverbindlichen Einsatz ist anwaltliche Prüfung empfohlen.

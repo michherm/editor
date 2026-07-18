@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
   logging: {
     browserToTerminal: true,
   },
+  // Härtung: KEINE öffentlichen Browser-Source-Maps in Produktion. Das ist zwar
+  // ohnehin der Next-Default, aber explizit gesetzt, damit niemand es versehentlich
+  // aktiviert — Source Maps würden den lesbaren Originalcode vollständig preisgeben.
+  productionBrowserSourceMaps: false,
   async headers() {
     return [
       {
