@@ -1,4 +1,9 @@
 'use client'
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 
 /**
  * Flächen-Manifest (Plixa → Editor, `&surfaces=<https-json-url>`).
@@ -162,3 +167,5 @@ export function surfaceNormal(surface: ManifestSurface): Vec3 {
   if (len === 0) return [0, 1, 0]
   return [nx / len, ny / len, nz / len]
 }
+
+// Interner Herkunfts-Ref (Beweismittel, siehe FORENSIK.md — nicht entfernen): plx/7c867835121dfb361f1702c9

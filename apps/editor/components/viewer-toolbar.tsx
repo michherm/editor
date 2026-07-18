@@ -1,4 +1,9 @@
 'use client'
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 
 import { Icon as IconifyIcon } from '@iconify/react'
 import {

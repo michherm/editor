@@ -1,4 +1,9 @@
 'use client'
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 
 /**
  * PlixaWelcome – freundliche, geführte Einführung für den Gestalten-Editor.
@@ -136,6 +141,9 @@ export function PlixaWelcome() {
             >
               {t('welcome.reset', { defaultValue: '↺ Zurück zum Original-Haus (Bearbeitung verwerfen)' })}
             </button>
+            <p className="mt-4 text-center text-[11px] text-muted-foreground/70">
+              © 2025–2026 HERRMANN SARL · Plixa. Alle Rechte vorbehalten.
+            </p>
           </div>
         </div>
       )}

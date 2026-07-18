@@ -1,3 +1,8 @@
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 /**
  * Aufbau-Rezepte (Finishes) für die Mengen-/Kostenkalkulation.
  *
@@ -202,3 +207,5 @@ export function getFinishById(id: string): Finish | undefined {
 export function finishesForSurfaceKind(kind: SurfaceKind): Finish[] {
   return FINISHES.filter((f) => f.appliesTo.includes(kind))
 }
+
+// Interner Herkunfts-Ref (Beweismittel, siehe FORENSIK.md — nicht entfernen): plx/72e994519c8b2e1d47fe4cff

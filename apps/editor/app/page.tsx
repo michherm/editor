@@ -1,4 +1,9 @@
 'use client'
+/*
+ * © 2025–2026 HERRMANN SARL (Michael Herrmann). Alle Rechte vorbehalten.
+ * Proprietär — keine Nutzung/Vervielfältigung/Bearbeitung/Dekompilierung ohne
+ * schriftliche Genehmigung. Siehe apps/editor/LICENSE. Kontakt: mh.solarkraftwerk@gmail.com
+ */
 
 import { Editor, frameCurrentScene, ItemsPanel, useViewer } from '@pascal-app/editor'
 import { Calculator, Hammer, Layers, Package, Settings } from 'lucide-react'
@@ -27,6 +32,7 @@ import {
   readSurfacesHandoffUrl,
   resolvePlixaParentOrigin,
 } from '@/lib/ifc-handoff'
+import { logProvenance } from '@/lib/provenance'
 import { fetchSurfaceManifest } from '@/lib/surfaces'
 import { setSurfaces } from '@/lib/surfaces-store'
 
@@ -148,6 +154,11 @@ export default function Home() {
   // Dann die eigenständigen Editor-Hinweise (Lokaler-Editor-Banner, Start-Tipp)
   // ausblenden — sie sind dort Rauschen und überlappen die Werkzeugleisten.
   const inPlixaFlow = embedded || !!ifcUrl || !!sessionUrl
+  // Passiver Echtheits-/Herkunftsnachweis in den DevTools (kein Netzwerk-Zugriff,
+  // kein Personenbezug — DSGVO-unbedenklich). Siehe lib/provenance.ts.
+  useEffect(() => {
+    logProvenance()
+  }, [])
   // Performance: Das exakte Plixa-Haus ist EIN sehr detailreiches, hoch-polygonales
   // GLB. Kanten-Umrandung (edges) und Schatten kosten darauf pro Frame besonders
   // viel und lassen schwächere Rechner ruckeln. Im Plixa-Ablauf deshalb beides
